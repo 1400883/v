@@ -1,0 +1,98 @@
+<resources>
+
+    <!-- Base application theme. -->
+    <style name="AppTheme" parent="Theme.AppCompat.Light.DarkActionBar">
+        <!-- Customize your theme here. -->
+        <item name="colorPrimary">@color/colorPrimary</item>
+        <item name="colorPrimaryDark">@color/colorPrimaryDark</item>
+        <item name="colorAccent">@color/colorAccent</item>
+    </style>
+
+    <style name="ListviewItem">
+        <item name="android:textSize">@dimen/listview_textSize</item>
+    </style>
+
+    <style name="ListviewItemOwner" parent="ListviewItem">
+        <item name="android:ellipsize">end</item>
+        <item name="android:singleLine">true</item>
+    </style>
+
+    <style name="ListviewItemIban" parent="ListviewItem">
+        <item name="android:scrollHorizontally">false</item>
+        <!--
+            Surprisingly, marginTop _seems_ to help push the bottom edge one
+            extra line downwards, causing RelativeLayout to resize properly
+            when IBAN splits over multiple lines.
+        -->
+        <item name="android:layout_marginTop">@dimen/listview_textSize</item>
+    </style>
+
+    <style name="EditAccountLayout">
+        <item name="android:orientation">vertical</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+
+        <item name="android:paddingTop">@dimen/editAccountView_topMargin</item>
+        <item name="android:paddingLeft">@dimen/editAccountView_sideMargin</item>
+        <item name="android:paddingRight">@dimen/editAccountView_sideMargin</item>
+        <item name="android:paddingBottom">@dimen/editAccountView_topMargin</item>
+
+        <item name="android:layout_gravity">center</item>
+        <item name="android:layout_marginLeft">@dimen/editAccountLayout_sideMargin</item>
+        <item name="android:layout_marginRight">@dimen/editAccountLayout_sideMargin</item>
+        <item name="android:background">@drawable/edit_account_background</item>
+        <!-- <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item> -->
+    </style>
+
+    <style name="EditAccountTextView">
+        <item name="android:layout_width">wrap_content</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/editAccount_titleTextSize</item>
+        <item name="android:singleLine">true</item>
+        <item name="android:textColor">#ddd</item>
+    </style>
+<!-- textPersonName textCapCharacters-->
+    <style name="EditAccountTextViewVertical" parent="EditAccountTextView">
+
+    </style>
+
+    <style name="EditAccountTextViewHorizontal" parent="EditAccountTextView">
+
+    </style>
+
+    <style name="EditAccountInput">
+        <item name="android:layout_width">fill_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:textSize">@dimen/editAccount_inputTextSize</item>
+        <!-- <item name="android:background">@drawable/edit_account_input</item> -->
+        <item name="android:hint"></item>
+    </style>
+
+    <style name="EditAccountInputVertical" parent="EditAccountInput">
+
+    </style>
+
+    <style name="EditAccountInputHorizontal" parent="EditAccountInput">
+
+    </style>
+
+    <style name="EditAccountError">
+        <item name="android:textSize">@dimen/editAccount_errorTextSize</item>
+        <item name="android:textColor">@color/editAccount_errorTextColor</item>
+        <item name="android:textStyle">bold</item>
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">wrap_content</item>
+        <item name="android:layout_marginLeft">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginStart">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginRight">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginEnd">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+    <style name="EditAccountNameError" parent="EditAccountError">
+
+    </style>
+
+    <style name="EditAccountIbanError" parent="EditAccountError">
+
+    </style>
+</resources>

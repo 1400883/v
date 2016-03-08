@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical">
+
+    <include layout="@layout/listview" />
+
+    <LinearLayout
+        style="@style/EditAccountLayout">
+
+        <TextView
+            android:text="@string/NewEditAccount_name"
+            android:id="@+id/textView"
+            style="@style/EditAccountTextViewVertical" />
+
+        <EditText
+            android:id="@+id/editText"
+            android:inputType="textPersonName"
+            style="@style/EditAccountInputVertical" />
+
+        <TextView
+            android:text="@string/NewEditAccount_iban"
+            android:id="@+id/textView1"
+            style="@style/EditAccountTextViewVertical" />
+
+        <EditText
+            android:id="@+id/editText1"
+            android:inputType="textCapCharacters"
+            style="@style/EditAccountInputVertical" />
+    </LinearLayout>
+
+
+</FrameLayout>

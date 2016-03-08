@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="fill_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:padding="6dip"
+    android:background="#00000000">
+
+    <TextView
+        android:id="@+id/textView1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentTop="true"
+        android:text="@string/listview_name_title"
+        style="@style/ListviewItem"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/textView2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignLeft="@id/textView1"
+        android:layout_alignStart="@id/textView1"
+        android:layout_below="@id/textView1"
+        android:text="@string/listview_iban_title"
+        style="@style/ListviewItem"
+        android:textAppearance="?android:attr/textAppearanceMedium" />
+
+    <TextView
+        android:id="@+id/owner"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/textView1"
+        android:layout_alignBottom="@id/textView1"
+        android:layout_toRightOf="@id/textView1"
+        android:layout_toEndOf="@id/textView1"
+        style="@style/ListviewItemOwner"
+        android:text="TextView" />
+    <!-- android:layout_alignBottom="@+id/textView2" -->
+    <TextView
+        android:id="@+id/iban"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignBaseline="@id/textView2"
+
+        android:layout_alignLeft="@id/owner"
+        android:layout_alignStart="@id/owner"
+
+        style="@style/ListviewItemIban"
+        android:text="FI21 1234 5600 0007 85"
+         />
+</RelativeLayout>

@@ -1,0 +1,16 @@
+<resources>
+    <!-- Default screen margins, per the Android Design guidelines. -->
+    <dimen name="activity_horizontal_margin">16dp</dimen>
+    <dimen name="activity_vertical_margin">16dp</dimen>
+    <dimen name="listview_textSize">30sp</dimen>
+
+    <dimen name="editAccount_inputTextSize">20sp</dimen>
+    <dimen name="editAccount_titleTextSize">22sp</dimen>
+    <dimen name="editAccount_errorTextSize">22sp</dimen>
+
+    <dimen name="editAccountLayout_sideMargin">5dip</dimen>
+    <dimen name="editAccountView_topMargin">10dp</dimen>
+    <dimen name="editAccountView_sideMargin">20dp</dimen>
+    <dimen name="editAccount_errorTextSideMargin">4dp</dimen>
+
+</resources>
