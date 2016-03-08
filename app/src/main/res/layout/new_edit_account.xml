@@ -1,29 +1,30 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:id="@+id/frameLayout"
+    android:id="@+id/listViewContainer"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
     android:orientation="horizontal">
 
     <include layout="@layout/listview" />
 
+    <Button
+        android:id="@+id/listviewBlockerButton"
+        style="@style/DummyBlockerButton" />
+
     <LinearLayout
-        style="@style/EditAccountLayout"
+        style="@style/AddEditAccountLayout"
         android:id="@+id/addEditAccountContainer">
 
-        <RelativeLayout
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"></RelativeLayout>
-
         <TextView
-            android:id="@+id/newEditAccountTitle"
+            android:id="@+id/addEditAccountTitle"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/NewAccount_title"
             android:textSize="30sp"
             android:textColor="#FFF"
-            android:layout_marginBottom="20dp"
-            android:layout_gravity="center_horizontal" />
+            android:layout_gravity="center_horizontal"
+            android:layout_centerHorizontal="true"
+            android:layout_marginBottom="20dp"/>
 
         <TextView
             android:text="@string/NewEditAccount_name"
@@ -56,6 +57,7 @@
             style="@style/EditAccountIbanError" />
 
         <LinearLayout
+            style="@style/EditAccountButtonContainer"
             android:orientation="horizontal"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
@@ -85,6 +87,7 @@
                 android:text="@string/EditAccount_delete"
                 android:layout_weight="1" />
         </LinearLayout>
+
     </LinearLayout>
 
 

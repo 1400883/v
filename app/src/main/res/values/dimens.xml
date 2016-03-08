@@ -9,8 +9,9 @@
     <dimen name="editAccount_errorTextSize">22sp</dimen>
 
     <dimen name="editAccountLayout_sideMargin">5dip</dimen>
-    <dimen name="editAccountView_topMargin">10dp</dimen>
+    <dimen name="editAccountView_topMargin">8dp</dimen>
+    <dimen name="editAccountView_bottomMargin">10dp</dimen>
     <dimen name="editAccountView_sideMargin">20dp</dimen>
-    <dimen name="editAccount_errorTextSideMargin">4dp</dimen>
+    <dimen name="editAccount_errorTextSideMargin">24dp</dimen>
 
 </resources>

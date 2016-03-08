@@ -27,31 +27,48 @@
         <item name="android:layout_marginTop">@dimen/listview_textSize</item>
     </style>
 
-    <style name="EditAccountLayout">
+    <style name="AddEditAccountLayout">
         <item name="android:orientation">vertical</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
 
         <item name="android:paddingTop">@dimen/editAccountView_topMargin</item>
-        <item name="android:paddingLeft">@dimen/editAccountView_sideMargin</item>
-        <item name="android:paddingRight">@dimen/editAccountView_sideMargin</item>
-        <item name="android:paddingBottom">@dimen/editAccountView_topMargin</item>
-
+        <!-- <item name="android:paddingLeft">@dimen/editAccountView_sideMargin</item>
+        <item name="android:paddingRight">@dimen/editAccountView_sideMargin</item> -->
+        <item name="android:paddingBottom">@dimen/editAccountView_bottomMargin</item>
+        <item name="android:clickable">true</item>
         <item name="android:layout_gravity">center</item>
         <item name="android:layout_marginLeft">@dimen/editAccountLayout_sideMargin</item>
         <item name="android:layout_marginRight">@dimen/editAccountLayout_sideMargin</item>
+        <item name="android:layout_marginStart">@dimen/editAccountLayout_sideMargin</item>
+        <item name="android:layout_marginEnd">@dimen/editAccountLayout_sideMargin</item>
         <item name="android:background">@drawable/edit_account_background</item>
+        <item name="android:visibility">invisible</item>
         <!-- <item name="android:buttonBarStyle">?android:attr/buttonBarStyle</item> -->
     </style>
 
-    <style name="EditAccountTextView">
+    <style name="NewEditAccountSideMargin">
+        <item name="android:layout_marginLeft">@dimen/editAccountView_sideMargin</item>
+        <item name="android:layout_marginRight">@dimen/editAccountView_sideMargin</item>
+        <item name="android:layout_marginStart">@dimen/editAccountView_sideMargin</item>
+        <item name="android:layout_marginEnd">@dimen/editAccountView_sideMargin</item>
+    </style>
+
+    <style name="NewEditAccountErrorSideMargin">
+        <item name="android:layout_marginLeft">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginStart">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginRight">@dimen/editAccount_errorTextSideMargin</item>
+        <item name="android:layout_marginEnd">@dimen/editAccount_errorTextSideMargin</item>
+    </style>
+
+    <style name="EditAccountTextView" parent="NewEditAccountSideMargin">
         <item name="android:layout_width">wrap_content</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">@dimen/editAccount_titleTextSize</item>
         <item name="android:singleLine">true</item>
         <item name="android:textColor">#ddd</item>
     </style>
-<!-- textPersonName textCapCharacters-->
+
     <style name="EditAccountTextViewVertical" parent="EditAccountTextView">
 
     </style>
@@ -60,12 +77,10 @@
 
     </style>
 
-    <style name="EditAccountInput">
+    <style name="EditAccountInput" parent="NewEditAccountSideMargin">
         <item name="android:layout_width">fill_parent</item>
         <item name="android:layout_height">wrap_content</item>
         <item name="android:textSize">@dimen/editAccount_inputTextSize</item>
-        <!-- <item name="android:background">@drawable/edit_account_input</item> -->
-        <item name="android:hint"></item>
     </style>
 
     <style name="EditAccountInputVertical" parent="EditAccountInput">
@@ -76,16 +91,12 @@
 
     </style>
 
-    <style name="EditAccountError">
+    <style name="EditAccountError" parent="NewEditAccountErrorSideMargin">
         <item name="android:textSize">@dimen/editAccount_errorTextSize</item>
         <item name="android:textColor">@color/editAccount_errorTextColor</item>
         <item name="android:textStyle">bold</item>
         <item name="android:layout_width">match_parent</item>
         <item name="android:layout_height">wrap_content</item>
-        <item name="android:layout_marginLeft">@dimen/editAccount_errorTextSideMargin</item>
-        <item name="android:layout_marginStart">@dimen/editAccount_errorTextSideMargin</item>
-        <item name="android:layout_marginRight">@dimen/editAccount_errorTextSideMargin</item>
-        <item name="android:layout_marginEnd">@dimen/editAccount_errorTextSideMargin</item>
         <item name="android:visibility">invisible</item>
     </style>
     <style name="EditAccountNameError" parent="EditAccountError">
@@ -95,4 +106,29 @@
     <style name="EditAccountIbanError" parent="EditAccountError">
 
     </style>
+    <style name="AddEditAccountCloseButton">
+        <!-- <item name="android:textSize">20sp</item>
+        <item name="android:textColor">#CCC</item>
+        <item name="android:background">@drawable/edit_account_close_button</item>  -->
+        <item name="android:layout_marginRight">6dp</item>
+        <!-- <item name="android:paddingTop">3dp</item>
+        <item name="android:paddingLeft">8dp</item>
+        <item name="android:paddingRight">8dp</item>
+        <item name="android:paddingBottom">3dp</item>
+        <item name="android:textStyle">bold</item> -->
+
+    </style>
+
+    <style name="EditAccountButtonContainer" parent="NewEditAccountSideMargin">
+
+    </style>
+
+    <style name="DummyBlockerButton">
+        <item name="android:layout_width">match_parent</item>
+        <item name="android:layout_height">match_parent</item>
+        <item name="android:layout_margin">0dp</item>
+        <item name="android:background">@android:color/transparent</item>
+        <item name="android:visibility">invisible</item>
+    </style>
+
 </resources>

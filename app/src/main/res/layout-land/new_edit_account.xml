@@ -7,7 +7,7 @@
     <include layout="@layout/listview" />
 
     <LinearLayout
-        style="@style/EditAccountLayout">
+        style="@style/AddEditAccountLayout">
 
         <TextView
             android:text="@string/NewEditAccount_name"

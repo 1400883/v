@@ -2,31 +2,44 @@ package com.example.tuomas.myfirstapp;
 
 import android.app.Activity;
 import android.os.Bundle;
-import android.widget.FrameLayout;
-import android.widget.LinearLayout;
+
+// DONE: Disable underlying GUI controls when Add/Edit view is visible / enable afterwards
 
 // TODO: Store IBANs in database with grouping spaces - easier that way
+// TODO: Add new account image button style matching
 // TODO: Account data input and save ("Add" button, input popup, filtering / errormsg, save to db)
-// TODO: Disable underlying GUI controls when Add/Edit view is visible / enable afterwards
 // TODO: Account item edit (edit, delete, copy to clipboard)
-// TODO: Add/edit duplicate confirmation
-// TODO: Make db query async
-
+// TODO: Add/edit duplicate confirmation / replace functionality (just change save button text and show instruction?)
+// TODO: Make db query async? Was REALLY slow at some point, blocking UI but now that I tried works ok
+// TODO: other orientations and screen sizes, hopefully got time for this
 public class AccountListActivity extends Activity {
 
   private DataManager mDataManager;
   private EventManager mEventManager;
+  private GuiManager mGuiManager;
 
   @Override
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-    mDataManager = new DataManager(this);
-    mEventManager = new EventManager(this, mDataManager);
+
+    // Setup references
+    GuiManager.setActivity(this);
+    DataManager.setActivity(this);
+    EventManager.setActivity(this);
+    mGuiManager = GuiManager.get();
+    mDataManager = DataManager.get();
+    mEventManager = EventManager.get();
+    mGuiManager.setManagers(mEventManager, mDataManager);
+    mDataManager.setManagers(mEventManager, mGuiManager);
+    mEventManager.setManagers(mDataManager, mGuiManager);
+
+    // Setup event listeners
     mEventManager.setEventListeners();
-    mDataManager.setListviewFilter();
-    mDataManager.setListviewDataSource(this);
-    setListviewFrameLayoutParameters();
+    // Activate listview filtering based on search bar content
+    mDataManager.setResultFilter();
+    // Set listview data source
+    mDataManager.setDataSource();
   }
 
   @Override
@@ -34,7 +47,7 @@ public class AccountListActivity extends Activity {
     super.onResume();
     mDataManager.openDatabase();
     // Generate ListView from SQLite Database
-    mDataManager.fillListview();
+    mDataManager.populateData();
   }
 
   @Override
@@ -43,16 +56,5 @@ public class AccountListActivity extends Activity {
     // Better close db object on pause, the process may
     // just get killed by the system without a notice
     mDataManager.closeDatabase();
-  }
-
-  private void setListviewFrameLayoutParameters() {
-    // For whatever reason, FrameLayout won't respect XML layout
-    // MATCH_PARENT parameters, but insist on WRAP_CONTENT.
-    // Setting them here fixes it.
-    LinearLayout.LayoutParams p = new LinearLayout.LayoutParams(
-      LinearLayout.LayoutParams.MATCH_PARENT,
-      LinearLayout.LayoutParams.MATCH_PARENT);
-    FrameLayout f = (FrameLayout) findViewById(R.id.frameLayout);
-    f.setLayoutParams(p);
   }
 }
