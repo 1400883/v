@@ -12,63 +12,50 @@
         style="@style/DummyBlockerButton" />
 
     <LinearLayout
-        style="@style/AddEditAccountLayout"
-        android:id="@+id/addEditAccountContainer">
+        android:id="@+id/addEditAccountContainer"
+        style="@style/newEditAccountLayout"
+        >
 
         <TextView
             android:id="@+id/addEditAccountTitle"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="@string/NewAccount_title"
-            android:textSize="30sp"
-            android:textColor="#FFF"
-            android:layout_gravity="center_horizontal"
-            android:layout_centerHorizontal="true"
-            android:layout_marginBottom="20dp"/>
+            style="@style/newEditAccountTitle" />
 
         <TextView
-            android:text="@string/NewEditAccount_name"
-            style="@style/EditAccountTextViewHorizontal" />
+            android:text="@string/newEditAccount_name"
+            style="@style/newEditAccountTextViewHorizontal" />
 
         <EditText
             android:id="@+id/nameInputField"
             android:inputType="textPersonName"
-            style="@style/EditAccountInputHorizontal"
-            android:layout_height="wrap_content" />
+            style="@style/newEditAccountInputHorizontal" />
 
         <TextView
             android:id="@+id/nameErrorMessage"
-            android:text="@string/NewEditAccount_nameError"
+            android:text="@string/newEditAccount_nameError"
             style="@style/EditAccountNameError" />
 
         <TextView
-            android:text="@string/NewEditAccount_iban"
-            style="@style/EditAccountTextViewHorizontal" />
+            android:text="@string/newEditAccount_iban"
+            style="@style/newEditAccountTextViewHorizontal" />
 
         <EditText
             android:id="@+id/ibanInputField"
             android:inputType="textCapCharacters"
-            style="@style/EditAccountInputHorizontal"
-            android:text="FI45 5390 0050 0045 03"/>
+            style="@style/newEditAccountInputHorizontal" />
 
         <TextView
             android:id="@+id/ibanErrorMessage"
-            android:text="@string/NewEditAccount_ibanError"
+            android:text="@string/newEditAccount_ibanError"
             style="@style/EditAccountIbanError" />
 
-        <LinearLayout
-            style="@style/EditAccountButtonContainer"
-            android:orientation="horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_marginTop="10dp">
+        <LinearLayout style="@style/EditAccountButtonContainer">
             <!-- style="?android:attr/buttonBarButtonStyle" -->
             <Button
                 android:id="@+id/saveButton"
-
+                style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/EditAccount_save"
+                android:text="@string/editAccount_save"
                 android:layout_weight="6" />
 
             <Button
@@ -76,7 +63,7 @@
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/EditAccount_cancel"
+                android:text="@string/editAccount_cancel"
                 android:layout_weight="5" />
 
             <Button
@@ -84,7 +71,7 @@
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/EditAccount_delete"
+                android:text="@string/editAccount_delete"
                 android:layout_weight="1" />
         </LinearLayout>
 

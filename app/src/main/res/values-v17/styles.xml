@@ -1,10 +1,10 @@
 <resources>
 
-    <style name="EditAccountTextView.EditAccountTextView">
+    <style name="newEditAccountTextView.EditAccountTextView">
         <item name="android:layout_marginStart">@dimen/editAccountView_sideMargin</item>
     </style>
 
-    <style name="EditAccountInput.EditAccountEditText">
+    <style name="newEditAccountInput.EditAccountEditText">
         <item name="android:layout_marginStart">@dimen/editAccountView_sideMargin</item>
         <item name="android:layout_marginEnd">@dimen/editAccountView_sideMargin</item>
     </style>

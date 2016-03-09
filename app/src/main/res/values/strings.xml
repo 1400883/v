@@ -1,23 +1,26 @@
 <resources>
     <string name="app_name">ListView CursorAdapter</string>
     <string name="some_text">Some North American Countries!</string>
-    <string name="some_hint">Type here to filter&#8230;</string>
 
     <string name="listview_name_title">Name:\u0020\u0020</string>
     <string name="listview_iban_title">IBAN:\u0020\u0020</string>
 
+    <string name="searchBarText">Search</string>
+    <string name="searchBarHint">Type here to search&#8230;</string>
+
+    <string name="newAccount_title">ADD NEW ACCOUNT</string>
+    <string name="editAccount_title">EDIT ACCOUNT</string>
+
+    <string name="newEditAccount_name">Account owner name:</string>
+    <string name="newEditAccount_iban">Account IBAN:</string>
+
+    <string name="newEditAccount_nameError">Owner name cannot be blank.</string>
+    <string name="newEditAccount_ibanError">Invalid IBAN.</string>
+
+    <string name="editAccount_save">Save</string>
+    <string name="editAccount_cancel">Cancel</string>
+    <string name="editAccount_delete">Del</string>
 
 
-    <string name="NewAccount_title">ADD NEW ACCOUNT</string>
-    <string name="EditAccount_title">EDIT ACCOUNT</string>
-
-    <string name="NewEditAccount_name">Account owner name:</string>
-    <string name="NewEditAccount_iban">Account IBAN:</string>
-
-    <string name="NewEditAccount_nameError">Owner name cannot be blank.</string>
-    <string name="NewEditAccount_ibanError">Invalid IBAN.</string>
-
-    <string name="EditAccount_save">Save</string>
-    <string name="EditAccount_cancel">Cancel</string>
-    <string name="EditAccount_delete">Del</string>
+    <string name="addNewAccount_success">New account added</string>
 </resources>

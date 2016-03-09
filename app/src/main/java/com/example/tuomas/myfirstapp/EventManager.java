@@ -52,7 +52,7 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   ///////////////////////////////////////////////
   public void setEventListeners() {
     // Main screen
-    ((ImageButton) mActivity.findViewById(R.id.addAccountButton)).setOnClickListener(this);
+    ((Button) mActivity.findViewById(R.id.addAccountButton)).setOnClickListener(this);
     ((EditText) mActivity.findViewById(R.id.searchField)).addTextChangedListener(this);
     ((ListView) mActivity.findViewById(R.id.listview)).setOnItemClickListener(this);
 
@@ -108,42 +108,14 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   public void onClick(View view) {
     switch (view.getId()) {
       case R.id.addAccountButton:
-
-        // Add new account
-        LinearLayout addAccountContainer =
-          (LinearLayout)mActivity.findViewById(R.id.addEditAccountContainer);
-        if (addAccountContainer.getVisibility() != View.VISIBLE) {
-          ((Button)mActivity.findViewById(R.id.searchBarBlockerButton))
-            .setVisibility(View.VISIBLE);
-          ((Button)mActivity.findViewById(R.id.listviewBlockerButton))
-            .setVisibility(View.VISIBLE);
-
-          ((TextView)mActivity.findViewById(R.id.addEditAccountTitle))
-            .setText(R.string.NewAccount_title);
-          ((TextView)mActivity.findViewById(R.id.nameErrorMessage)).setVisibility(View.INVISIBLE);
-
-          ((EditText)mActivity.findViewById(R.id.nameInputField)).setText("");
-          ((EditText)mActivity.findViewById(R.id.nameInputField)).requestFocus();
-
-          ((EditText)mActivity.findViewById(R.id.ibanInputField)).setText("");
-
-
-
-          addAccountContainer.setVisibility(View.VISIBLE);
-
-        }
+        mGuiManager.onAddAccountButton();
         break;
       case R.id.saveButton:
-        // Save
-        EditText et = (EditText) mActivity.findViewById(R.id.nameInputField);
-        String a = "abcd";
-        et.setText(a);
+        mGuiManager.onSaveButton();
         break;
       case R.id.cancelButton:
-
-
-
         // Cancel
+        mGuiManager.onCancelButton();
         break;
       case R.id.deleteButton:
         // Delete

@@ -7,27 +7,27 @@
     <include layout="@layout/listview" />
 
     <LinearLayout
-        style="@style/AddEditAccountLayout">
+        style="@style/newEditAccountLayout">
 
         <TextView
-            android:text="@string/NewEditAccount_name"
+            android:text="@string/newEditAccount_name"
             android:id="@+id/textView"
-            style="@style/EditAccountTextViewVertical" />
+            style="@style/newEditAccountTextViewVertical" />
 
         <EditText
             android:id="@+id/editText"
             android:inputType="textPersonName"
-            style="@style/EditAccountInputVertical" />
+            style="@style/newEditAccountInputVertical" />
 
         <TextView
-            android:text="@string/NewEditAccount_iban"
+            android:text="@string/newEditAccount_iban"
             android:id="@+id/textView1"
-            style="@style/EditAccountTextViewVertical" />
+            style="@style/newEditAccountTextViewVertical" />
 
         <EditText
             android:id="@+id/editText1"
             android:inputType="textCapCharacters"
-            style="@style/EditAccountInputVertical" />
+            style="@style/newEditAccountInputVertical" />
     </LinearLayout>
 
 

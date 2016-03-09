@@ -1,19 +1,20 @@
 package com.example.tuomas.myfirstapp;
 
 import android.app.Activity;
-import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.SQLException;
-import android.database.sqlite.SQLiteDatabase;
-import android.database.sqlite.SQLiteOpenHelper;
+import android.util.Log;
+import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
 
+import java.util.Arrays;
+
 public class DataManager {
   private DatabaseAdapter mDatabaseAdapter;
   private SimpleCursorAdapter mCursorAdapter;
+  // private InputValidator mInputValidator;
 
   private static Activity mActivity;
   private GuiManager mGuiManager;
@@ -45,7 +46,8 @@ public class DataManager {
   ///////////////////////////////////////////////
   private DataManager() {
     mCursorAdapter = createCursorAdapter(mActivity);
-    mDatabaseAdapter = new DatabaseAdapter(mActivity, this);
+    mDatabaseAdapter = new DatabaseAdapter(mActivity);
+    // mInputValidator = new InputValidator();
   }
 
   ///////////////////////////////////////////////
@@ -58,18 +60,29 @@ public class DataManager {
   }
 
   private void refreshDataDisplay() { refreshDataDisplay(""); }
+
   private Cursor refreshDataDisplay(String filter) {
-    Cursor cursor = mDatabaseAdapter.fetchAccountsByOwnerOrIban(filter);
+    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban(filter);
     mCursorAdapter.changeCursor(cursor);
     return cursor;
   }
 
   public void populateData() {
-    // Clean all data
+    // Clean all data from database
     mDatabaseAdapter.deleteAllAccounts();
-    // Add some data
+    // Add some data into database
     mDatabaseAdapter.insertSomeAccounts();
+    // Update data display
     refreshDataDisplay();
+  }
+  public void refreshData() {
+    // Invoke search bar callback manually with current
+    // filter text to force listview display update.
+    CharSequence text = ((EditText)mActivity.findViewById(R.id.searchField)).getText();
+    mEventManager.onTextChanged(text, 0, 0, 0);
+  }
+  public boolean createAccount(String name, String iban) {
+      return mDatabaseAdapter.createAccount(name, iban) > -1;
   }
 
   public SimpleCursorAdapter getCursorAdapter() {
@@ -82,7 +95,7 @@ public class DataManager {
   public void setResultFilter() {
     mCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
       public Cursor runQuery(CharSequence constraint) {
-        return mDatabaseAdapter.fetchAccountsByOwnerOrIban(constraint.toString());
+        return mDatabaseAdapter.getAccountsByOwnerOrIban(constraint.toString());
       }
     });
   }
@@ -111,117 +124,133 @@ public class DataManager {
       0);
   }
 
+  public boolean isValidName(String name) {
+    return InputValidator.isValidName(name);
+  }
+  public boolean isValidIban(String iban) {
+    return InputValidator.isValidIban(iban);
+  }
 
   ///////////////////////////////////////////////
+  // Input validator inner class
   ///////////////////////////////////////////////
-  // DATABASE MANAGER
-  ///////////////////////////////////////////////
-  ///////////////////////////////////////////////
-  private static class DatabaseAdapter {
+  private static class InputValidator {
+    private static final String countryCodes[];
+    private static final int lengths[];
+    private static final String countryCodeRegex;
+    private static final String chars;
 
-    private DatabaseHelper mDbHelper = null;
-    private SQLiteDatabase mDb = null;
-    private final Context mContext;
-    private final DataManager mDataManager;
+    static {
+      countryCodeRegex =
+        "AL|AD|AT|AZ|BH|BE|BA|BR|BG|CR|HR|CY|CZ|DK|DO|EE|FI|FR|GE|DE|GI|GR|" +
+          "GT|HU|IS|IE|IL|IT|JO|KZ|XK|KW|LV|LB|LI|LT|LU|MK|MT|MR|MU|MD|MC|ME|" +
+          "NL|NO|PK|PS|PL|PT|QA|RO|LC|SM|ST|SA|RS|SC|SK|SI|ES|SE|CH|TL|TN|TR|" +
+          "UA|AE|GB|VG";
+      countryCodes = countryCodeRegex.split("\\|");
+      lengths = new int[] {
+        28,24,20,28,22,16,20,29,22,21,21,28,24,18,28,20,18,27,22,22,23,27,
+        28,28,26,22,23,27,30,20,20,30,21,28,21,20,20,19,31,27,30,24,27,22,
+        18,15,24,29,28,25,29,24,32,27,25,24,22,31,24,19,24,24,21,23,24,26,
+        29,23,22,24
+      };
+      chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    }
 
     //////////////////////////////////////////////////////
-    // Database specs
+    // Public methods
     //////////////////////////////////////////////////////
-    private static final String DB_NAME = "account.db";
-    private static final String DB_TABLE = "account";
-    private static final int DB_VERSION = 1;
+    public static boolean isValidName(String name) {
+      return name != null && name.length() > 0;
+    }
 
-    public static final String COLUMN_ID = "_id";
-    public static final String COLUMN_OWNER = "owner";
-    public static final String COLUMN_IBAN = "iban";
+    public static boolean isValidIban(String iban) {
+      iban = removeSpaces(iban).toUpperCase();
+      return
+        isValidCountryCode(iban) &&
+        isValidLength(iban) &&
+        isValidCharacterSet(iban) &&
+        isValidCheckDigitSet(iban);
+    }
 
-    private static final String CREATE_TABLE =
-      "CREATE TABLE IF NOT EXISTS " + DB_TABLE + " (" +
-        COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-        COLUMN_OWNER + " TEXT NOT NULL, " + COLUMN_IBAN + " TEXT NOT NULL);";
-
-    private static final String DROP_TABLE =
-      "DROP TABLE IF EXISTS " + DB_TABLE;
     //////////////////////////////////////////////////////
 
-    private static class DatabaseHelper extends SQLiteOpenHelper {
-
-      DatabaseHelper(Context context) {
-        // Prepare database for creation. This will happen on the
-        // first call to getWritableDatabase() / getReadableDatabase()
-        super(context, DB_NAME, null, DB_VERSION);
-      }
-
-      @Override
-      public void onCreate(SQLiteDatabase db) {
-        db.execSQL(CREATE_TABLE);
-      }
-
-      @Override
-      public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-        db.execSQL(DROP_TABLE);
-        onCreate(db);
-      }
+    private static boolean isValidCountryCode(String iban) {
+      String cc = getCountryCode(iban);
+      Log.w("isValidCountryCode", Integer.toString(getCountryCodeIndex(cc)));
+      return getCountryCodeIndex(cc) > -1;
+    }
+    private static int getCountryCodeIndex(String cc) {
+      return Arrays.asList(countryCodes).indexOf(cc);
+    }
+    private static boolean isValidLength(String iban) {
+      Log.w("isValidLength", iban.length() + " " + getCorrectLength(iban));
+      return iban.length() == getCorrectLength(iban);
+    }
+    private static boolean isValidCharacterSet(String iban) {
+      Log.w("isValidCharacterSet", Boolean.toString(iban.matches("^[0-9A-Z]+$")));
+      return iban.matches("^[0-9A-Z]+$");
+    }
+    private static boolean isValidCheckDigitSet(String iban) {
+    /*
+      http://www.cnb.cz/cs/platebni_styk/iban/download/EBS204.pdf, chapter 6.1
+    */
+      iban = moveFirstFourCharsToEnd(iban);
+      iban = convertAlphabetToNumbers(iban);
+      int modulo = applyMod97(iban);
+      Log.w("isValidCheckDigitSet", Integer.toString(modulo));
+      return modulo == 1;
     }
 
-    public DatabaseAdapter(Context context, DataManager manager) {
-      this.mContext = context;
-      mDataManager = manager;
-    }
-
-    public void open() throws SQLException {
-      if (mDbHelper == null) {
-        mDbHelper = new DatabaseHelper(mContext);
+    private static int applyMod97(String iban) {
+    /*
+      http://www.cnb.cz/cs/platebni_styk/iban/download/EBS204.pdf, chapter 6.3
+    */
+      int modulo = 0;
+      // Process in 9 digit chunks, compatible with 32-bit signed int precision
+      int numDigitsPerChunk = 9;
+      while (iban.length() > 0) {
+        // Extract another chunk
+        int chunkLength = Math.min(numDigitsPerChunk, iban.length());
+        int currentChunk = Integer.parseInt(iban.substring(0, chunkLength));
+        // Trim chunk length worth of digits from left or all if shorter
+        iban = iban.replaceAll("^.{" + chunkLength + "}(.*)$", "$1");
+        modulo = currentChunk % 97;
+        // Add modulo before the remainder
+        if (modulo > 0 && iban.length() > 0)
+          iban = Integer.toString(modulo) + iban;
       }
-      mDb = mDbHelper.getWritableDatabase();
+      return modulo;
     }
 
-    public void close() {
-      if (mDbHelper != null) {
-        mDbHelper.close();
+    private static String moveFirstFourCharsToEnd(String iban) {
+      return iban.replaceAll("^(.{4})(.*)$", "$2$1");
+    }
+
+    private static String convertAlphabetToNumbers(String iban) {
+      for (int i = 0; i < iban.length(); ++i) {
+        char currentChar = iban.charAt(i);
+        int index = chars.indexOf(currentChar);
+        if (index > -1) {
+          int replacementValue = (index + 10);
+          iban = iban.replaceAll(
+            Character.toString(currentChar),
+            Integer.toString(replacementValue));
+        }
       }
+      return iban;
+    }
+    private static String removeSpaces(String iban) {
+      return iban.replaceAll(" ", "");
     }
 
-    public long createAccount(String owner, String iban) {
-      ContentValues initialValues = new ContentValues();
-      initialValues.put(COLUMN_OWNER, owner);
-      initialValues.put(COLUMN_IBAN, iban);
-
-      return mDb.insert(DB_TABLE, null, initialValues);
+    private static String getCountryCode(String iban) {
+      return iban.substring(0, Math.min(2, iban.length()));
     }
 
-    public boolean deleteAllAccounts() {
-      return mDb.delete(DB_TABLE, null, null) > 0;
-    }
-
-    public Cursor fetchAccountsByOwnerOrIban(String inputText) throws SQLException {
-      Cursor mCursor = null;
-      if (inputText == null || inputText.length() == 0) {
-        // Fetch all accounts
-        mCursor = mDb.query(DB_TABLE,
-          new String[]{COLUMN_ID, COLUMN_OWNER, COLUMN_IBAN},
-          null, null, null, null, COLUMN_OWNER);
-      } else {
-        mCursor = mDb.query(DB_TABLE,
-          new String[]{COLUMN_ID, COLUMN_OWNER, COLUMN_IBAN},
-          COLUMN_OWNER + " LIKE ? OR " + COLUMN_IBAN + " LIKE ?",
-          new String[]{"%" + inputText + "%", "%" + inputText + "%"},
-          null, null, COLUMN_OWNER);
-      }
-      if (mCursor != null) {
-        mCursor.moveToFirst();
-      }
-      return mCursor;
-    }
-
-    public void insertSomeAccounts() {
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 03");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 04");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 05");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 06");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 07");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 08");
-      createAccount("Tuomas Keinänen", "FI45 5390 0050 0045 09");
+    private static int getCorrectLength(String iban) {
+      String cc = getCountryCode(iban);
+      int ccIndex = getCountryCodeIndex(cc);
+      return ccIndex > -1 ? lengths[ccIndex] : -1;
     }
   }
 }
