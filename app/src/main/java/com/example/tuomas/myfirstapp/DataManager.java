@@ -8,7 +8,6 @@ import android.widget.EditText;
 import android.widget.FilterQueryProvider;
 import android.widget.ListView;
 import android.widget.SimpleCursorAdapter;
-
 import java.util.Arrays;
 
 public class DataManager {
@@ -20,7 +19,7 @@ public class DataManager {
   private GuiManager mGuiManager;
   private EventManager mEventManager;
   private static DataManager instance = null;
-
+  public final static int IBAN_GROUPSIZE = 4;
   ///////////////////////////////////////////////
   // Singleton setup. Reference to activity and other managers
   // must be set before requesting instance via singleton
@@ -75,19 +74,20 @@ public class DataManager {
     // Update data display
     refreshDataDisplay();
   }
-  public void refreshData() {
+  public void refreshDisplay() {
     // Invoke search bar callback manually with current
     // filter text to force listview display update.
     CharSequence text = ((EditText)mActivity.findViewById(R.id.searchField)).getText();
     mEventManager.onTextChanged(text, 0, 0, 0);
   }
   public boolean createAccount(String name, String iban) {
-      return mDatabaseAdapter.createAccount(name, iban) > -1;
+    return mDatabaseAdapter.createAccount(name, iban) > -1;
   }
-
-  public SimpleCursorAdapter getCursorAdapter() {
-    return mCursorAdapter;
+  public boolean replaceAccount(String name, String iban) {
+    int id = getIdFromName(name);
+    return mDatabaseAdapter.replaceAccount(id, name, iban) > -1;
   }
+  public SimpleCursorAdapter getCursorAdapter() { return mCursorAdapter; }
   public void setDataSource() {
     ((ListView)mActivity.findViewById(R.id.listview))
       .setAdapter(mCursorAdapter);
@@ -124,17 +124,56 @@ public class DataManager {
       0);
   }
 
-  public boolean isValidName(String name) {
-    return InputValidator.isValidName(name);
+  public boolean isDuplicateName(String name) {
+    Cursor cursor = mCursorAdapter.getCursor();
+    cursor.moveToFirst();
+    for (int i = 0; i < cursor.getCount(); ++i) {
+      String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
+      // Let case-sensitive comparison be fine.
+      if (owner.equals(name))
+        return true;
+      cursor.moveToNext();
+    }
+    return false;
   }
-  public boolean isValidIban(String iban) {
-    return InputValidator.isValidIban(iban);
+
+  private int getIdFromName(String name) {
+    Cursor cursor = mCursorAdapter.getCursor();
+    cursor.moveToFirst();
+    for (int i = 0; i < cursor.getCount(); ++i) {
+      String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
+      if (owner.equals(name)) {
+        return cursor.getInt(cursor.getColumnIndex(DatabaseAdapter.COLUMN_ID));
+      }
+      cursor.moveToNext();
+    }
+    return -1;
+  }
+
+  public String getIbanFromName(String name) throws Exception {
+    Cursor cursor = mCursorAdapter.getCursor();
+    cursor.moveToFirst();
+    for (int i = 0; i < cursor.getCount(); ++i) {
+      String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
+      if (owner.equals(name)) {
+        return cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_IBAN));
+      }
+      cursor.moveToNext();
+    }
+    throw new Exception("Owner '" + name + "' did not match any account.");
+  }
+
+  public String removeSpaces(String iban) {
+    return iban.replaceAll("\\s", "");
+  }
+  public String divideIntoGroups(String iban, int groupSize) {
+    return iban.replaceAll("(.{0," + groupSize + "})", "$1 ").trim();
   }
 
   ///////////////////////////////////////////////
   // Input validator inner class
   ///////////////////////////////////////////////
-  private static class InputValidator {
+  public static class InputValidator {
     private static final String countryCodes[];
     private static final int lengths[];
     private static final String countryCodeRegex;
@@ -160,16 +199,20 @@ public class DataManager {
     // Public methods
     //////////////////////////////////////////////////////
     public static boolean isValidName(String name) {
-      return name != null && name.length() > 0;
+      // Non null and else than empty / only whitespaces
+      return name != null && name.replaceAll("\\s", "").length() > 0;
     }
 
     public static boolean isValidIban(String iban) {
-      iban = removeSpaces(iban).toUpperCase();
-      return
-        isValidCountryCode(iban) &&
-        isValidLength(iban) &&
-        isValidCharacterSet(iban) &&
-        isValidCheckDigitSet(iban);
+      if (iban != null) {
+        iban = DataManager.get().removeSpaces(iban).toUpperCase();
+        return
+          isValidCountryCode(iban) &&
+          isValidLength(iban) &&
+          isValidCharacterSet(iban) &&
+          isValidCheckDigitSet(iban);
+      }
+      return false;
     }
 
     //////////////////////////////////////////////////////
@@ -238,9 +281,6 @@ public class DataManager {
         }
       }
       return iban;
-    }
-    private static String removeSpaces(String iban) {
-      return iban.replaceAll(" ", "");
     }
 
     private static String getCountryCode(String iban) {

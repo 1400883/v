@@ -3,76 +3,183 @@
     android:id="@+id/listViewContainer"
     android:layout_width="fill_parent"
     android:layout_height="fill_parent"
-    android:orientation="horizontal">
+             android:visibility="visible">
 
     <include layout="@layout/listview" />
 
     <Button
         android:id="@+id/listviewBlockerButton"
-        style="@style/DummyBlockerButton" />
+        style="@style/dummyBlockerButton" />
 
     <LinearLayout
-        android:id="@+id/addEditAccountContainer"
+        android:id="@+id/newEditAccountContainer"
         style="@style/newEditAccountLayout"
         >
 
         <TextView
-            android:id="@+id/addEditAccountTitle"
+            android:id="@+id/newEditAccountTitle"
             style="@style/newEditAccountTitle" />
 
-        <TextView
-            android:text="@string/newEditAccount_name"
-            style="@style/newEditAccountTextViewHorizontal" />
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            >
 
-        <EditText
-            android:id="@+id/nameInputField"
-            android:inputType="textPersonName"
-            style="@style/newEditAccountInputHorizontal" />
+            <LinearLayout
+                android:id="@+id/newEditAccountInputScreen"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible">
 
-        <TextView
-            android:id="@+id/nameErrorMessage"
-            android:text="@string/newEditAccount_nameError"
-            style="@style/EditAccountNameError" />
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="fill_parent">
 
-        <TextView
-            android:text="@string/newEditAccount_iban"
-            style="@style/newEditAccountTextViewHorizontal" />
+                    <TextView
+                        android:text="@string/newEditAccount_name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:id="@+id/ownerTitle"
+                        style="@style/newEditAccountFieldTitleHorizontal"
+                        android:layout_alignBaseline="@+id/nameInputField"/>
 
-        <EditText
-            android:id="@+id/ibanInputField"
-            android:inputType="textCapCharacters"
-            style="@style/newEditAccountInputHorizontal" />
+                    <EditText
+                        android:id="@+id/nameInputField"
+                        android:inputType="textPersonName"
+                        android:layout_toRightOf="@+id/ownerTitle"
+                        style="@style/newEditAccountFieldInputHorizontal"
+                        android:hint="@string/newEditAccount_nameHint"/>
 
-        <TextView
-            android:id="@+id/ibanErrorMessage"
-            android:text="@string/newEditAccount_ibanError"
-            style="@style/EditAccountIbanError" />
+                    <TextView
+                        android:text="@string/newEditAccount_iban"
+                        style="@style/newEditAccountFieldTitleHorizontal"
+                        android:id="@+id/ibanTitle"
+                        android:layout_alignRight="@+id/ownerTitle"
+                        android:layout_alignBaseline="@+id/ibanInputField"
+                        android:layout_below="@+id/nameInputField"/>
 
-        <LinearLayout style="@style/EditAccountButtonContainer">
+                    <EditText
+                        android:id="@+id/ibanInputField"
+                        android:inputType="textCapCharacters"
+                        style="@style/newEditAccountFieldInputHorizontal"
+                        android:layout_toRightOf="@+id/ibanTitle"
+                        android:hint="@string/newEditAccount_ibanHint"
+                        android:layout_below="@+id/nameInputField"/>
+
+                    <TextView
+                        android:id="@+id/nameIbanErrorMessage"
+                        android:text="@string/newEditAccount_ibanError"
+                        style="@style/newEditAccountIbanError"
+                        android:layout_below="@+id/ibanInputField"
+                        android:visibility="visible"
+                        android:layout_alignRight="@+id/ibanInputField"/>
+                </RelativeLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/newEditAccountConfirmationScreen"
+                android:orientation="vertical"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:visibility="visible">
+
+                <TextView
+                    android:id="@+id/newEditAccountDuplicateTitle"
+                    android:text="@string/newEditAccount_duplicateTitle"
+                    style="@style/newEditAccountBasicText" />
+
+                <RelativeLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:paddingLeft="@dimen/editAccount_textSideMargin"
+                    android:paddingStart="@dimen/editAccount_textSideMargin"
+                    android:paddingRight="@dimen/editAccount_textSideMargin"
+                    android:paddingEnd="@dimen/editAccount_textSideMargin">
+
+                    <TextView
+                        android:id="@+id/newEditAccountDuplicateOldTitle"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/editAccount_baseTextSize"
+                        android:text="@string/newEditAccount_duplicateOldTitle"
+                        android:textColor="#DDD"
+                        android:layout_alignEnd="@+id/newEditAccountDuplicateNewTitle"
+                        android:layout_alignRight="@+id/newEditAccountDuplicateNewTitle"/>
+
+                    <TextView
+                        android:id="@+id/newEditAccountDuplicateNewTitle"
+                        android:text="@string/newEditAccount_duplicateNewTitle"
+                        android:layout_below="@+id/newEditAccountDuplicateOldIban"
+                        android:textColor="#DDD"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textSize="@dimen/editAccount_baseTextSize" />
+
+                    <TextView
+                        android:id="@+id/newEditAccountDuplicateOldIban"
+                        style="@style/newEditAccountBasicText"
+                        android:textColor="#F44"
+                        android:text="FI70 5390 0050 0045 03"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"
+                        android:layout_toEndOf="@+id/newEditAccountDuplicateOldTitle" />
+
+                    <TextView
+                        android:id="@+id/newEditAccountDuplicateNewIban"
+                        style="@style/newEditAccountBasicText"
+                        android:textColor="#4F4"
+                        android:text="FI70 5390 0050 0045 03"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"
+                        android:layout_toEndOf="@+id/newEditAccountDuplicateOldTitle"
+                        android:layout_alignTop="@+id/newEditAccountDuplicateNewTitle"/>
+                </RelativeLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/newEditAccount_duplicateConfirmation"
+                    style="@style/newEditAccountBasicText"
+                    />
+            </LinearLayout>
+
+        </FrameLayout>
+
+        <LinearLayout style="@style/newEditAccountButtonContainer"
+            >
             <!-- style="?android:attr/buttonBarButtonStyle" -->
             <Button
                 android:id="@+id/saveButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/editAccount_save"
-                android:layout_weight="6" />
+                android:text="@string/newEditAccount_saveButton"
+                android:layout_weight="3"
+                android:width="0dip"/>
 
             <Button
                 android:id="@+id/cancelButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/editAccount_cancel"
-                android:layout_weight="5" />
+                android:text="@string/newEditAccount_cancelButton"
+                android:layout_weight="3"
+                android:width="0dip"/>
 
             <Button
                 android:id="@+id/deleteButton"
                 style="?android:attr/buttonBarButtonStyle"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/editAccount_delete"
-                android:layout_weight="1" />
+                android:text="@string/newEditAccount_deleteButton"
+                android:layout_weight="1"
+                android:width="0dip"/>
         </LinearLayout>
 
     </LinearLayout>

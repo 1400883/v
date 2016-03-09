@@ -7,20 +7,32 @@
 
     <string name="searchBarText">Search</string>
     <string name="searchBarHint">Type here to search&#8230;</string>
+    <string name="newEditAccount_nameHint">Account owner&#8230;</string>
+    <string name="newEditAccount_ibanHint">Account IBAN&#8230;</string>
 
     <string name="newAccount_title">ADD NEW ACCOUNT</string>
     <string name="editAccount_title">EDIT ACCOUNT</string>
 
-    <string name="newEditAccount_name">Account owner name:</string>
+    <string name="newEditAccount_name">Account owner:</string>
     <string name="newEditAccount_iban">Account IBAN:</string>
 
-    <string name="newEditAccount_nameError">Owner name cannot be blank.</string>
-    <string name="newEditAccount_ibanError">Invalid IBAN.</string>
+    <string name="newEditAccount_nameError">Invalid owner name.</string>
+    <string name="newEditAccount_ibanError">Check IBAN.</string>
+    <string name="internal_error">Internal error</string>
 
-    <string name="editAccount_save">Save</string>
-    <string name="editAccount_cancel">Cancel</string>
-    <string name="editAccount_delete">Del</string>
+    <string name="newEditAccount_saveButton">Save</string>
+    <string name="newEditAccount_cancelButton">Cancel</string>
+    <string name="newEditAccount_deleteButton">Del</string>
+    <string name="newEditAccount_yesButton">Yes</string>
+    <string name="newEditAccount_noButton">No</string>
+
+    <string name="newEditAccount_duplicateTitle">\u0020has already been assigned an IBAN.</string>
+    <string name="newEditAccount_duplicateOldTitle">Old:\u0020</string>
+    <string name="newEditAccount_duplicateNewTitle">New:\u0020</string>
+    <string name="newEditAccount_duplicateConfirmation">Proceed with replace?</string>
+
+    <string name="newAccount_success">New account added</string>
+    <string name="editAccount_success">Account updated</string>
 
 
-    <string name="addNewAccount_success">New account added</string>
 </resources>

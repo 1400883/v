@@ -2,16 +2,18 @@ package com.example.tuomas.myfirstapp;
 
 import android.app.Activity;
 import android.os.Bundle;
+import android.util.Log;
 
 // DONE: Disable underlying GUI controls when Add/Edit view is visible / enable afterwards
+// DONE: Store IBANs in database with grouping spaces - easier that way
+// DONE: Account data input and save ("Add" button, input popup, filtering / errormsg, save to db)
 
-// TODO: Store IBANs in database with grouping spaces - easier that way
-// TODO: Add new account image button style matching
-// TODO: Account data input and save ("Add" button, input popup, filtering / errormsg, save to db)
 // TODO: Account item edit (edit, delete, copy to clipboard)
-// TODO: Add/edit duplicate confirmation / replace functionality (just change save button text and show instruction?)
-// TODO: Make db query async? Was REALLY slow at some point, blocking UI but now that I tried works ok
+// TODO: (Add DONE) Add/edit duplicate confirmation / replace functionality (just change save button text and show instruction?)
+// TODO: Make db query async? Was REALLY slow at some point, blocking UI, but later appears to work ok
 // TODO: other orientations and screen sizes, hopefully got time for this
+// TODO: Animate / add other states to Add button
+
 public class AccountListActivity extends Activity {
 
   private DataManager mDataManager;
@@ -22,7 +24,7 @@ public class AccountListActivity extends Activity {
   public void onCreate(Bundle savedInstanceState) {
     super.onCreate(savedInstanceState);
     setContentView(R.layout.main);
-
+    Log.v("onCreate", "asdf");
     // Setup references
     GuiManager.setActivity(this);
     DataManager.setActivity(this);
@@ -40,10 +42,13 @@ public class AccountListActivity extends Activity {
     mDataManager.setResultFilter();
     // Set listview data source
     mDataManager.setDataSource();
+
+    mDataManager.openDatabase();
   }
 
   @Override
   public void onResume() {
+    Log.v("onResume", "ryth");
     super.onResume();
     mDataManager.openDatabase();
     // Generate ListView from SQLite Database
@@ -52,6 +57,7 @@ public class AccountListActivity extends Activity {
 
   @Override
   public void onPause() {
+    Log.v("onPause", "");
     super.onPause();
     // Better close db object on pause, the process may
     // just get killed by the system without a notice
