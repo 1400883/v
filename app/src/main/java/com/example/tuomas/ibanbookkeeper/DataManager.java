@@ -125,6 +125,7 @@ public class DataManager {
           case New:
             mGuiManager.updateScreen(
               GuiManager.NewDisplayState.Show, GuiManager.RequestedScreen.New);
+            break;
           case Edit:
             mGuiManager.updateScreen(
               GuiManager.NewDisplayState.Show, GuiManager.RequestedScreen.Edit);

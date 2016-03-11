@@ -129,23 +129,21 @@
                         android:textSize="@dimen/editAccount_baseTextSize"
                         android:layout_marginLeft="10dp"
                         android:layout_marginStart="10dp" />
-
+                    <!--android:text="FI12 3456 7890 1234 56"-->
                     <TextView
                         android:id="@+id/newEditAccountDuplicateOldIban"
                         style="@style/newEditAccountBasicText"
                         android:textColor="#F44"
-                        android:text="FI12 3456 7890 1234 56"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"
                         android:layout_toEndOf="@+id/newEditAccountDuplicateOldTitle"
                         />
-
+                    <!--android:text="FI09 8765 4321 0987 65"-->
                     <TextView
                         android:id="@+id/newEditAccountDuplicateNewIban"
                         style="@style/newEditAccountBasicText"
                         android:textColor="#4F4"
-                        android:text="FI09 8765 4321 0987 65"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"

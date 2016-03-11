@@ -9,20 +9,27 @@
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:layout_marginTop="3dp"
+        android:layout_marginBottom="3dp"
+        android:layout_marginLeft="2dp"
+        android:layout_marginRight="3dp">
 
         <LinearLayout
             android:id="@+id/searchBarContainer"
             android:orientation="horizontal"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content">
+            android:layout_height="wrap_content"
+            android:background="@drawable/search_bar_background"
+            android:paddingTop="5dp"
+            android:paddingBottom="2dp">
 
             <Button
                 android:id="@+id/addAccountButton"
                 style="@style/newAccountButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="Add"
+                android:text="@string/newAccountButton"
                 />
             <!--
             <ImageButton

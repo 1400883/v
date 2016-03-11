@@ -21,6 +21,7 @@
     <string name="newEditAccount_ibanError">Check IBAN.</string>
     <string name="internal_error">Internal error</string>
 
+    <string name="newAccountButton">NEW</string>
     <string name="newEditAccount_saveButton">Save</string>
     <string name="newEditAccount_cancelButton">Cancel</string>
     <string name="newEditAccount_deleteButton">Del</string>
