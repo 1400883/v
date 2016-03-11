@@ -1,4 +1,4 @@
-package com.example.tuomas.myfirstapp;
+package com.example.tuomas.ibanbookkeeper;
 
 import android.app.Activity;
 import android.database.Cursor;

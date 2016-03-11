@@ -1,4 +1,4 @@
-package com.example.tuomas.myfirstapp;
+package com.example.tuomas.ibanbookkeeper;
 
 import org.junit.Test;
 

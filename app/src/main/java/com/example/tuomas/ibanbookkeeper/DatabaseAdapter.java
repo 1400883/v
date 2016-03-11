@@ -1,4 +1,4 @@
-package com.example.tuomas.myfirstapp;
+package com.example.tuomas.ibanbookkeeper;
 
 import android.content.ContentValues;
 import android.content.Context;
@@ -95,8 +95,7 @@ public class DatabaseAdapter {
   //////////////////////////////////////////////////////
   public void insertDebugDataAccounts() {
     createAccount("Pelle Peloton", "GB29 NWBK 6016 1331 9268 19");
-    createAccount("Teppo Tulppu", "VG96 VPVG 0000 0123 4567 8901");
-    createAccount("Kalle Korkki", "AE07 0331 2345 6789 0123 456");
+    createAccount("Teppo Tulppu", "FI21 1234 5600 0007 85");
     createAccount("Aku Ankka", "TL38 0080 0123 4567 8910 157");
     createAccount("Simo Sisu", "CH93 0076 2011 6238 5295 7");
     createAccount("Musta Pekka", "SI56 2633 0001 2039 086");
