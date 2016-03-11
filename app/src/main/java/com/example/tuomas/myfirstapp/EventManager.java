@@ -2,6 +2,7 @@ package com.example.tuomas.myfirstapp;
 
 import android.app.Activity;
 import android.database.Cursor;
+import android.os.IBinder;
 import android.text.Editable;
 import android.text.TextWatcher;
 import android.view.MotionEvent;
@@ -9,13 +10,14 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
-import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.ListView;
 
-public class EventManager implements View.OnClickListener, TextWatcher, AdapterView.OnItemClickListener {
-  private static Activity mActivity;
+public class EventManager implements
+  View.OnClickListener, TextWatcher, AdapterView.OnItemClickListener {
+
+  private Activity mActivity = null;
   private DataManager mDataManager;
   private GuiManager mGuiManager;
   private static EventManager instance = null;
@@ -25,8 +27,10 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   // must be set before requesting instance via singleton
   ///////////////////////////////////////////////
 
-  public static void setActivity(Activity activity) {
-    mActivity = activity;
+  public void setActivity(Activity activity) {
+    if (mActivity != activity) {
+      mActivity = activity;
+    }
   }
   public void setManagers(DataManager dataManager, GuiManager guiManager) {
     mDataManager = dataManager;
@@ -40,9 +44,6 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
     return instance;
   }
 
-  ///////////////////////////////////////////////
-  // Constructor
-  ///////////////////////////////////////////////
   private EventManager() {}
 
   ///////////////////////////////////////////////
@@ -52,44 +53,38 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   ///////////////////////////////////////////////
   public void setEventListeners() {
     // Main screen
-    ((Button) mActivity.findViewById(R.id.addAccountButton)).setOnClickListener(this);
+    mActivity.findViewById(R.id.addAccountButton).setOnClickListener(this);
     ((EditText) mActivity.findViewById(R.id.searchField)).addTextChangedListener(this);
     ((ListView) mActivity.findViewById(R.id.listview)).setOnItemClickListener(this);
 
     // Add / edit account view
-    ((Button) mActivity.findViewById(R.id.saveButton)).setOnClickListener(this);
-    ((Button) mActivity.findViewById(R.id.cancelButton)).setOnClickListener(this);
-    ((Button) mActivity.findViewById(R.id.deleteButton)).setOnClickListener(this);
+    mActivity.findViewById(R.id.saveButton).setOnClickListener(this);
+    mActivity.findViewById(R.id.cancelButton).setOnClickListener(this);
+    mActivity.findViewById(R.id.deleteButton).setOnClickListener(this);
 
     // Use listeners for new / edit account inputs only to clear potentially
     // visible error messages. This should improve usability a bit.
-    ((EditText) mActivity.findViewById(R.id.nameInputField)).addTextChangedListener(
-      new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {}
-        @Override
-        public void afterTextChanged(Editable s) { mGuiManager.clearErrorMessage(); }
-      }
-    );
-    ((EditText) mActivity.findViewById(R.id.ibanInputField)).addTextChangedListener(
-      new TextWatcher() {
-        @Override
-        public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
-        @Override
-        public void onTextChanged(CharSequence s, int start, int before, int count) {}
-        @Override
-        public void afterTextChanged(Editable s) { mGuiManager.clearErrorMessage(); }
-      }
-    );
+    ((EditText) mActivity.findViewById(R.id.nameInputField))
+      .addTextChangedListener(new CustomTextWatcher());
+    ((EditText) mActivity.findViewById(R.id.ibanInputField))
+      .addTextChangedListener(new CustomTextWatcher());
 
-    // Get rid of the mighty everlasting soft keyboard until explicitly called for
+    // Get rid of the almighty everlasting soft keyboard until explicitly called for
     LinearLayout rootContainer = (LinearLayout)mActivity.findViewById(R.id.rootContainer);
-    keyboardHideListener(rootContainer);
+    setKeyboardHideListeners(rootContainer);
   }
 
-  private void keyboardHideListener(View view) {
+  // Common listener for new / edit account input fields
+  private class CustomTextWatcher implements TextWatcher {
+    @Override
+    public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
+    @Override
+    public void onTextChanged(CharSequence s, int start, int before, int count) {}
+    @Override
+    public void afterTextChanged(Editable s) { mGuiManager.clearErrorMessage(); }
+  }
+
+  private void setKeyboardHideListeners(View view) {
     // Set up touch listeners for non-editable text views to hide soft keyboard
     if(!(view instanceof EditText)) {
       view.setOnTouchListener(new View.OnTouchListener() {
@@ -104,7 +99,7 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
     if (view instanceof ViewGroup) {
       for (int i = 0; i < ((ViewGroup) view).getChildCount(); i++) {
         View innerView = ((ViewGroup) view).getChildAt(i);
-        keyboardHideListener(innerView);
+        setKeyboardHideListeners(innerView);
       }
     }
   }
@@ -112,8 +107,13 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   private void hideSoftKeyboard(Activity activity) {
     InputMethodManager imManager =
       (InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
-    imManager.hideSoftInputFromWindow(
-      mActivity.getCurrentFocus().getWindowToken(), 0);
+    View focusedView = mActivity.getCurrentFocus();
+    if (focusedView != null) {
+      IBinder token = focusedView.getWindowToken();
+      if (token != null) {
+        imManager.hideSoftInputFromWindow(token, 0);
+      }
+    }
   }
 
   ///////////////////////////////////////////////
@@ -137,18 +137,10 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
     View view,
     int position,
     long id) {
-    // Get the cursor, positioned to the corresponding row in the result set
+    // Get the cursor containing data at the clicked row
     Cursor cursor = (Cursor) listView.getItemAtPosition(position);
-
-    // Get the data from this row in the database.
-    /*
-    String countryCode =
-      cursor.getString(
-        cursor.getColumnIndexOrThrow(
-          DataManager.DatabaseAdapter.COLUMN_IBAN));
-    Toast.makeText(mActivity.getApplicationContext(),
-      countryCode, Toast.LENGTH_SHORT).show();
-     */
+    // Show edit screen
+    mGuiManager.editAction(cursor);
   }
 
   ///////////////////////////////////////////////
@@ -158,17 +150,18 @@ public class EventManager implements View.OnClickListener, TextWatcher, AdapterV
   public void onClick(View view) {
     switch (view.getId()) {
       case R.id.addAccountButton:
-        mGuiManager.onNewAccountButton();
+        mGuiManager.addAction();
         break;
       case R.id.saveButton:
-        mGuiManager.onSaveButton();
+        mGuiManager.saveAction();
         break;
       case R.id.cancelButton:
         // Cancel
-        mGuiManager.onCancelButton();
+        mGuiManager.cancelAction();
         break;
       case R.id.deleteButton:
         // Delete
+        mGuiManager.deleteAction();
         break;
       default:
         break;

@@ -7,12 +7,13 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.database.DatabaseUtils;
+import android.util.Log;
 
 public class DatabaseAdapter {
 
   private DatabaseHelper mDatabaseHelper = null;
   private SQLiteDatabase mDatabase = null;
-  private final Context mContext;
+  private Context mContext;
 
   //////////////////////////////////////////////////////
   // Database specs
@@ -28,7 +29,8 @@ public class DatabaseAdapter {
   private static final String CREATE_TABLE =
     "CREATE TABLE IF NOT EXISTS " + DB_TABLE + " (" +
       COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-      COLUMN_OWNER + " TEXT NOT NULL, " + COLUMN_IBAN + " TEXT NOT NULL);";
+      COLUMN_OWNER + " TEXT NOT NULL, " +
+      COLUMN_IBAN + " TEXT NOT NULL);";
 
   private static final String DROP_TABLE =
     "DROP TABLE IF EXISTS " + DB_TABLE;
@@ -36,6 +38,12 @@ public class DatabaseAdapter {
 
   public DatabaseAdapter(Context context) { mContext = context; }
 
+  public void updateContext(Context context) {
+    if (mContext != context){
+      mContext = context;
+      mDatabaseHelper = new DatabaseHelper(mContext);
+    }
+  }
   public void open() throws SQLException {
     if (mDatabaseHelper == null) {
       mDatabaseHelper = new DatabaseHelper(mContext);
@@ -61,29 +69,32 @@ public class DatabaseAdapter {
     values.put(COLUMN_IBAN, iban);
     return mDatabase.replace(DB_TABLE, null, values);
   }
-
+  public int deleteAccount(int id) {
+    return mDatabase.delete(DB_TABLE, "_id == ?",
+      new String[] { Integer.toString(id) });
+  }
   public boolean deleteAllAccounts() {
     return mDatabase.delete(DB_TABLE, null, null) > 0;
   }
 
   public Cursor getAccountsByOwnerOrIban(String filter) throws SQLException {
-    Cursor mCursor = null;
+    Cursor cursor = null;
     if (filter == null || filter.length() == 0) {
       // Get all accounts
-      mCursor = mDatabase.query(DB_TABLE,
+      cursor = mDatabase.query(DB_TABLE,
         new String[]{COLUMN_ID, COLUMN_OWNER, COLUMN_IBAN},
         null, null, null, null, COLUMN_OWNER + " COLLATE NOCASE");
     } else {
-      mCursor = mDatabase.query(DB_TABLE,
+      cursor = mDatabase.query(DB_TABLE,
         new String[]{COLUMN_ID, COLUMN_OWNER, COLUMN_IBAN},
         COLUMN_OWNER + " LIKE ? OR " + COLUMN_IBAN + " LIKE ?",
         new String[]{"%" + filter + "%", "%" + filter + "%"},
         null, null, COLUMN_OWNER + " COLLATE NOCASE");
     }
-    if (mCursor != null) {
-      mCursor.moveToFirst();
+    if (cursor != null) {
+      cursor.moveToFirst();
     }
-    return mCursor;
+    return cursor;
   }
 
   public void insertSomeAccounts() {
@@ -98,16 +109,14 @@ public class DatabaseAdapter {
 
   private class DatabaseHelper extends SQLiteOpenHelper {
     DatabaseHelper(Context context) {
-      // Prepare database for creation. This will happen on the
+      // Prepare database for creation / upgrade. This will happen on the
       // first call to getWritableDatabase() / getReadableDatabase()
       super(context, DB_NAME, null, DB_VERSION);
     }
-
     @Override
     public void onCreate(SQLiteDatabase db) {
       db.execSQL(CREATE_TABLE);
     }
-
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
       db.execSQL(DROP_TABLE);

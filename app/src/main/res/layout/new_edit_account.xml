@@ -9,7 +9,8 @@
 
     <Button
         android:id="@+id/listviewBlockerButton"
-        style="@style/dummyBlockerButton" />
+        style="@style/dummyBlockerButton"
+        android:visibility="invisible"/>
 
     <LinearLayout
         android:id="@+id/newEditAccountContainer"
@@ -48,6 +49,7 @@
                         android:id="@+id/nameInputField"
                         android:inputType="textPersonName"
                         android:layout_toRightOf="@+id/ownerTitle"
+                        android:layout_toEndOf="@+id/ownerTitle"
                         style="@style/newEditAccountFieldInputHorizontal"
                         android:hint="@string/newEditAccount_nameHint"/>
 
@@ -56,6 +58,7 @@
                         style="@style/newEditAccountFieldTitleHorizontal"
                         android:id="@+id/ibanTitle"
                         android:layout_alignRight="@+id/ownerTitle"
+                        android:layout_alignEnd="@+id/ownerTitle"
                         android:layout_alignBaseline="@+id/ibanInputField"
                         android:layout_below="@+id/nameInputField"/>
 
@@ -64,6 +67,7 @@
                         android:inputType="textCapCharacters"
                         style="@style/newEditAccountFieldInputHorizontal"
                         android:layout_toRightOf="@+id/ibanTitle"
+                        android:layout_toEndOf="@+id/ibanTitle"
                         android:hint="@string/newEditAccount_ibanHint"
                         android:layout_below="@+id/nameInputField"/>
 
@@ -73,7 +77,8 @@
                         style="@style/newEditAccountIbanError"
                         android:layout_below="@+id/ibanInputField"
                         android:visibility="visible"
-                        android:layout_alignRight="@+id/ibanInputField"/>
+                        android:layout_alignRight="@+id/ibanInputField"
+                        android:layout_alignEnd="@+id/ibanInputField" />
                 </RelativeLayout>
 
             </LinearLayout>
@@ -83,57 +88,63 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:visibility="visible">
+                >
 
                 <TextView
-                    android:id="@+id/newEditAccountDuplicateTitle"
-                    android:text="@string/newEditAccount_duplicateTitle"
-                    style="@style/newEditAccountBasicText" />
+                    android:id="@+id/newEditAccountConfirmationTitle"
+                    android:text="@string/newAccount_duplicateTitle"
+                    style="@style/newEditAccountBasicText"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"/>
 
                 <RelativeLayout
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="10dp"
-                    android:layout_marginBottom="10dp"
                     android:paddingLeft="@dimen/editAccount_textSideMargin"
                     android:paddingStart="@dimen/editAccount_textSideMargin"
                     android:paddingRight="@dimen/editAccount_textSideMargin"
-                    android:paddingEnd="@dimen/editAccount_textSideMargin">
+                    android:paddingEnd="@dimen/editAccount_textSideMargin"
+                    >
 
                     <TextView
                         android:id="@+id/newEditAccountDuplicateOldTitle"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:textSize="@dimen/editAccount_baseTextSize"
-                        android:text="@string/newEditAccount_duplicateOldTitle"
+                        android:text="@string/newEditAccount_duplicateOldIbanTitle"
                         android:textColor="#DDD"
                         android:layout_alignEnd="@+id/newEditAccountDuplicateNewTitle"
-                        android:layout_alignRight="@+id/newEditAccountDuplicateNewTitle"/>
+                        android:layout_alignRight="@+id/newEditAccountDuplicateNewTitle"
+                        />
 
                     <TextView
                         android:id="@+id/newEditAccountDuplicateNewTitle"
-                        android:text="@string/newEditAccount_duplicateNewTitle"
+                        android:text="@string/newEditAccount_duplicateNewIbanTitle"
                         android:layout_below="@+id/newEditAccountDuplicateOldIban"
                         android:textColor="#DDD"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textSize="@dimen/editAccount_baseTextSize" />
+                        android:textSize="@dimen/editAccount_baseTextSize"
+                        android:layout_marginLeft="10dp"
+                        android:layout_marginStart="10dp" />
 
                     <TextView
                         android:id="@+id/newEditAccountDuplicateOldIban"
                         style="@style/newEditAccountBasicText"
                         android:textColor="#F44"
-                        android:text="FI70 5390 0050 0045 03"
+                        android:text="FI12 3456 7890 1234 56"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"
-                        android:layout_toEndOf="@+id/newEditAccountDuplicateOldTitle" />
+                        android:layout_toEndOf="@+id/newEditAccountDuplicateOldTitle"
+                        />
 
                     <TextView
                         android:id="@+id/newEditAccountDuplicateNewIban"
                         style="@style/newEditAccountBasicText"
                         android:textColor="#4F4"
-                        android:text="FI70 5390 0050 0045 03"
+                        android:text="FI09 8765 4321 0987 65"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_toRightOf="@+id/newEditAccountDuplicateOldTitle"
@@ -146,7 +157,26 @@
                     android:layout_height="wrap_content"
                     android:text="@string/newEditAccount_duplicateConfirmation"
                     style="@style/newEditAccountBasicText"
-                    />
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_marginTop="10dp"
+                    android:id="@+id/newEditAccountConfirmationQuestion"/>
+            </LinearLayout>
+
+            <LinearLayout
+                android:orientation="horizontal"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:visibility="invisible">
+
+                <TextView
+                    style="@style/newEditAccountBasicText"
+                    android:id="@+id/textView"
+                    android:text="@string/deleteAccount_title"
+                    android:layout_marginLeft="3dp"
+                    android:layout_marginRight="3dp"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"/>
             </LinearLayout>
 
         </FrameLayout>

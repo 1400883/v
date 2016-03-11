@@ -13,21 +13,35 @@ import java.util.Arrays;
 public class DataManager {
   private DatabaseAdapter mDatabaseAdapter;
   private SimpleCursorAdapter mCursorAdapter;
-  // private InputValidator mInputValidator;
 
-  private static Activity mActivity;
+  private String TAG = "DataManager";
+  private Activity mActivity = null;
   private GuiManager mGuiManager;
   private EventManager mEventManager;
   private static DataManager instance = null;
-  public final static int IBAN_GROUPSIZE = 4;
+
+  private int IBAN_GROUPSIZE = 4;
+  private String mOriginalEditName;
+
+  public static final int MAX_OWNER_LENGTH = 30;
   ///////////////////////////////////////////////
   // Singleton setup. Reference to activity and other managers
   // must be set before requesting instance via singleton
   ///////////////////////////////////////////////
 
-  public static void setActivity(Activity activity) {
-    mActivity = activity;
+  public void setActivity(Activity activity) {
+    if (mActivity != activity) {
+      mActivity = activity;
+      if (mDatabaseAdapter == null) {
+        mDatabaseAdapter = new DatabaseAdapter(mActivity);
+      }
+      else {
+        mDatabaseAdapter.updateContext(mActivity);
+      }
+    }
+    mCursorAdapter = createCursorAdapter(mActivity);
   }
+
   public void setManagers(EventManager eventManager, GuiManager guiManager) {
     mGuiManager = guiManager;
     mEventManager = eventManager;
@@ -40,41 +54,24 @@ public class DataManager {
     return instance;
   }
 
-  ///////////////////////////////////////////////
-  // Constructor
-  ///////////////////////////////////////////////
-  private DataManager() {
-    mCursorAdapter = createCursorAdapter(mActivity);
-    mDatabaseAdapter = new DatabaseAdapter(mActivity);
-    // mInputValidator = new InputValidator();
-  }
+  private DataManager() {}
 
   ///////////////////////////////////////////////
 
   public void openDatabase() {
     mDatabaseAdapter.open();
   }
-  public void closeDatabase() {
-    mDatabaseAdapter.close();
-  }
+  public void closeDatabase() { mDatabaseAdapter.close(); }
 
-  private void refreshDataDisplay() { refreshDataDisplay(""); }
-
-  private Cursor refreshDataDisplay(String filter) {
-    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban(filter);
-    mCursorAdapter.changeCursor(cursor);
-    return cursor;
-  }
-
-  public void populateData() {
+  public void insertDebugData() {
     // Clean all data from database
     mDatabaseAdapter.deleteAllAccounts();
     // Add some data into database
     mDatabaseAdapter.insertSomeAccounts();
     // Update data display
-    refreshDataDisplay();
+    mCursorAdapter.changeCursor(mDatabaseAdapter.getAccountsByOwnerOrIban(""));
   }
-  public void refreshDisplay() {
+  public void refreshAccountData() {
     // Invoke search bar callback manually with current
     // filter text to force listview display update.
     CharSequence text = ((EditText)mActivity.findViewById(R.id.searchField)).getText();
@@ -83,9 +80,12 @@ public class DataManager {
   public boolean createAccount(String name, String iban) {
     return mDatabaseAdapter.createAccount(name, iban) > -1;
   }
-  public boolean replaceAccount(String name, String iban) {
-    int id = getIdFromName(name);
+  public boolean replaceAccount(int id, String name, String iban) {
     return mDatabaseAdapter.replaceAccount(id, name, iban) > -1;
+  }
+  public boolean deleteAccount(String name) {
+    int id = getIdFromName(name);
+    return mDatabaseAdapter.deleteAccount(id) == 1;
   }
   public SimpleCursorAdapter getCursorAdapter() { return mCursorAdapter; }
   public void setDataSource() {
@@ -117,28 +117,42 @@ public class DataManager {
     // Bind source columns & target layout and views.
     return new SimpleCursorAdapter(
       context,
-      R.layout.account_item,
+      R.layout.listview_item,
       null,
       fromColumns,
       toViews,
       0);
   }
 
-  public boolean isDuplicateName(String name) {
-    Cursor cursor = mCursorAdapter.getCursor();
+  public void setOriginalEditName(String name) {
+    mOriginalEditName = name;
+  }
+  public String getOriginalEditName() { return mOriginalEditName; }
+  public boolean isSameName(String name) { return mOriginalEditName.equals(name); }
+  public boolean isUniqueName(String name) {
+    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban("");
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
       // Let case-sensitive comparison be fine.
       if (owner.equals(name))
-        return true;
+        return false;
       cursor.moveToNext();
     }
-    return false;
+    return true;
   }
-
-  private int getIdFromName(String name) {
-    Cursor cursor = mCursorAdapter.getCursor();
+  public String formatIban(String iban) {
+    // Reformat iban:
+    // - remove spaces
+    // - convert to uppercase
+    // - divide into groups, each separated by space
+    return
+      removeWhitespaces(iban)
+      .toUpperCase()
+      .replaceAll("(.{0," + IBAN_GROUPSIZE + "})", "$1 ").trim();
+  }
+  public int getIdFromName(String name) {
+    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban("");
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
@@ -149,9 +163,8 @@ public class DataManager {
     }
     return -1;
   }
-
-  public String getIbanFromName(String name) throws Exception {
-    Cursor cursor = mCursorAdapter.getCursor();
+  public String getIbanFromName(String name) /*throws Exception */ {
+    Cursor cursor =  mDatabaseAdapter.getAccountsByOwnerOrIban("");
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
@@ -160,15 +173,13 @@ public class DataManager {
       }
       cursor.moveToNext();
     }
-    throw new Exception("Owner '" + name + "' did not match any account.");
+    Log.d(TAG, "Owner '" + name + "' did not match any account.");
+    // throw new Exception("Owner '" + name + "' did not match any account.");
+    return "";
   }
 
-  public String removeSpaces(String iban) {
-    return iban.replaceAll("\\s", "");
-  }
-  public String divideIntoGroups(String iban, int groupSize) {
-    return iban.replaceAll("(.{0," + groupSize + "})", "$1 ").trim();
-  }
+  public String removeWhitespaces(String input) { return input.replaceAll("\\s", ""); }
+
 
   ///////////////////////////////////////////////
   // Input validator inner class
@@ -178,13 +189,12 @@ public class DataManager {
     private static final int lengths[];
     private static final String countryCodeRegex;
     private static final String chars;
-
     static {
       countryCodeRegex =
         "AL|AD|AT|AZ|BH|BE|BA|BR|BG|CR|HR|CY|CZ|DK|DO|EE|FI|FR|GE|DE|GI|GR|" +
-          "GT|HU|IS|IE|IL|IT|JO|KZ|XK|KW|LV|LB|LI|LT|LU|MK|MT|MR|MU|MD|MC|ME|" +
-          "NL|NO|PK|PS|PL|PT|QA|RO|LC|SM|ST|SA|RS|SC|SK|SI|ES|SE|CH|TL|TN|TR|" +
-          "UA|AE|GB|VG";
+        "GT|HU|IS|IE|IL|IT|JO|KZ|XK|KW|LV|LB|LI|LT|LU|MK|MT|MR|MU|MD|MC|ME|" +
+        "NL|NO|PK|PS|PL|PT|QA|RO|LC|SM|ST|SA|RS|SC|SK|SI|ES|SE|CH|TL|TN|TR|" +
+        "UA|AE|GB|VG";
       countryCodes = countryCodeRegex.split("\\|");
       lengths = new int[] {
         28,24,20,28,22,16,20,29,22,21,21,28,24,18,28,20,18,27,22,22,23,27,
@@ -192,20 +202,21 @@ public class DataManager {
         18,15,24,29,28,25,29,24,32,27,25,24,22,31,24,19,24,24,21,23,24,26,
         29,23,22,24
       };
+
       chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
 
     //////////////////////////////////////////////////////
-    // Public methods
-    //////////////////////////////////////////////////////
+
     public static boolean isValidName(String name) {
       // Non null and else than empty / only whitespaces
-      return name != null && name.replaceAll("\\s", "").length() > 0;
+      return name != null && removeWhitespaces(name).length() > 0;
     }
 
     public static boolean isValidIban(String iban) {
       if (iban != null) {
-        iban = DataManager.get().removeSpaces(iban).toUpperCase();
+        // Remove whitespaces and convert to uppercase first
+        iban = removeWhitespaces(iban).toUpperCase();
         return
           isValidCountryCode(iban) &&
           isValidLength(iban) &&
@@ -215,22 +226,20 @@ public class DataManager {
       return false;
     }
 
-    //////////////////////////////////////////////////////
-
     private static boolean isValidCountryCode(String iban) {
       String cc = getCountryCode(iban);
-      Log.w("isValidCountryCode", Integer.toString(getCountryCodeIndex(cc)));
+      Log.d("isValidCountryCode", Integer.toString(getCountryCodeIndex(cc)));
       return getCountryCodeIndex(cc) > -1;
     }
     private static int getCountryCodeIndex(String cc) {
       return Arrays.asList(countryCodes).indexOf(cc);
     }
     private static boolean isValidLength(String iban) {
-      Log.w("isValidLength", iban.length() + " " + getCorrectLength(iban));
+      Log.d("isValidLength", iban.length() + " " + getCorrectLength(iban));
       return iban.length() == getCorrectLength(iban);
     }
     private static boolean isValidCharacterSet(String iban) {
-      Log.w("isValidCharacterSet", Boolean.toString(iban.matches("^[0-9A-Z]+$")));
+      Log.d("isValidCharacterSet", Boolean.toString(iban.matches("^[0-9A-Z]+$")));
       return iban.matches("^[0-9A-Z]+$");
     }
     private static boolean isValidCheckDigitSet(String iban) {
@@ -240,7 +249,7 @@ public class DataManager {
       iban = moveFirstFourCharsToEnd(iban);
       iban = convertAlphabetToNumbers(iban);
       int modulo = applyMod97(iban);
-      Log.w("isValidCheckDigitSet", Integer.toString(modulo));
+      Log.d("isValidCheckDigitSet", Integer.toString(modulo));
       return modulo == 1;
     }
 
@@ -291,6 +300,10 @@ public class DataManager {
       String cc = getCountryCode(iban);
       int ccIndex = getCountryCodeIndex(cc);
       return ccIndex > -1 ? lengths[ccIndex] : -1;
+    }
+
+    private static String removeWhitespaces(String iban) {
+      return iban.replaceAll("\\s", "");
     }
   }
 }

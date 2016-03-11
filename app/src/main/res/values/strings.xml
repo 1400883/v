@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">ListView CursorAdapter</string>
+    <string name="app_name">IBAN Bookkeeper</string>
     <string name="some_text">Some North American Countries!</string>
 
     <string name="listview_name_title">Name:\u0020\u0020</string>
@@ -12,6 +12,7 @@
 
     <string name="newAccount_title">ADD NEW ACCOUNT</string>
     <string name="editAccount_title">EDIT ACCOUNT</string>
+    <string name="deleteAccount_title">DELETE ACCOUNT</string>
 
     <string name="newEditAccount_name">Account owner:</string>
     <string name="newEditAccount_iban">Account IBAN:</string>
@@ -26,13 +27,24 @@
     <string name="newEditAccount_yesButton">Yes</string>
     <string name="newEditAccount_noButton">No</string>
 
-    <string name="newEditAccount_duplicateTitle">\u0020has already been assigned an IBAN.</string>
-    <string name="newEditAccount_duplicateOldTitle">Old:\u0020</string>
-    <string name="newEditAccount_duplicateNewTitle">New:\u0020</string>
+    <string name="newAccount_duplicateTitle">
+        \u0020has already been assigned an IBAN account.</string>
+    <string name="editAccount_duplicateTitle">
+        \u0020already exists and has an IBAN account.</string>
+    <string name="deleteAccount_confirmationTitle">\u0020is about to get deleted.
+        Data will be removed permanently.</string>
+    <string name="newEditAccount_duplicateOldIbanTitle">Old:\u0020</string>
+    <string name="newEditAccount_duplicateNewIbanTitle">New:\u0020</string>
+    <string name="newEditAccount_deleteIbanTitle">IBAN:\u0020</string>
     <string name="newEditAccount_duplicateConfirmation">Proceed with replace?</string>
+    <string name="newEditAccount_deleteConfirmation">Proceed with deletion?</string>
 
     <string name="newAccount_success">New account added</string>
-    <string name="editAccount_success">Account updated</string>
+    <string name="updateAccount_success">Account updated</string>
+    <string name="deleteAccount_success">Account deleted</string>
+    <string name="newAccount_failure">Account creation failed</string>
+    <string name="updateAccount_failure">Account update failed</string>
+    <string name="deleteAccount_failure">Account deletion failed</string>
 
 
 </resources>
