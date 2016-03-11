@@ -6,8 +6,6 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
-import android.database.DatabaseUtils;
-import android.util.Log;
 
 public class DatabaseAdapter {
 
@@ -15,7 +13,9 @@ public class DatabaseAdapter {
   private SQLiteDatabase mDatabase = null;
   private Context mContext;
 
+  //////////////////////////////////////////////////////
   // Database specs
+  //////////////////////////////////////////////////////
   private static final String DB_NAME = "account.db";
   private static final String DB_TABLE = "account";
   private static final int DB_VERSION = 1;
@@ -35,6 +35,8 @@ public class DatabaseAdapter {
   //////////////////////////////////////////////////////
   public DatabaseAdapter(Context context) { mContext = context; }
   //////////////////////////////////////////////////////
+  // Connection management
+  //////////////////////////////////////////////////////
   public void open() throws SQLException {
     if (mDatabaseHelper == null) {
       mDatabaseHelper = new DatabaseHelper(mContext);
@@ -47,28 +49,18 @@ public class DatabaseAdapter {
     }
   }
   //////////////////////////////////////////////////////
+  // Create, read, update, delete
+  //////////////////////////////////////////////////////
   public long createAccount(String owner, String iban) {
     ContentValues values = new ContentValues(2);
     values.put(COLUMN_OWNER, owner);
     values.put(COLUMN_IBAN, iban);
     return mDatabase.insert(DB_TABLE, null, values);
   }
-  public long replaceAccount(int id, String owner, String iban) {
-    ContentValues values = new ContentValues(3);
-    values.put(COLUMN_ID, id);
-    values.put(COLUMN_OWNER, owner);
-    values.put(COLUMN_IBAN, iban);
-    return mDatabase.replace(DB_TABLE, null, values);
+  public Cursor selectAccounts() {
+    return selectAccounts("");
   }
-  public int deleteAccount(int id) {
-    return mDatabase.delete(DB_TABLE, "_id == ?",
-      new String[] { Integer.toString(id) });
-  }
-  //////////////////////////////////////////////////////
-  public Cursor getAccountsByOwnerOrIban() throws SQLException {
-    return getAccountsByOwnerOrIban("");
-  }
-  public Cursor getAccountsByOwnerOrIban(String filter) throws SQLException {
+  public Cursor selectAccounts(String filter) {
     Cursor cursor = null;
     if (filter == null || filter.length() == 0) {
       // Get all accounts
@@ -87,17 +79,32 @@ public class DatabaseAdapter {
     }
     return cursor;
   }
+  public long replaceAccount(int id, String owner, String iban) {
+    ContentValues values = new ContentValues(3);
+    values.put(COLUMN_ID, id);
+    values.put(COLUMN_OWNER, owner);
+    values.put(COLUMN_IBAN, iban);
+    return mDatabase.replace(DB_TABLE, null, values);
+  }
+  public int deleteAccount(int id) {
+    return mDatabase.delete(DB_TABLE, "_id == ?",
+      new String[] { Integer.toString(id) });
+  }
+  //////////////////////////////////////////////////////
+  // Initial database population for debugging
   //////////////////////////////////////////////////////
   public void insertDebugDataAccounts() {
-    createAccount("Pelle Peloton", "FI45 5390 0050 0045 03");
-    createAccount("Teppo Tulppu", "FI45 5390 0050 0045 04");
-    createAccount("Kalle Korkki", "FI45 5390 0050 0045 05");
-    createAccount("Aku Ankka", "FI45 5390 0050 0045 06");
-    createAccount("Simo Sisu", "FI45 5390 0050 0045 07");
-    createAccount("Musta Pekka", "FI45 5390 0050 0045 08");
-    createAccount("Mikki Hiiri", "FI45 5390 0050 0045 09");
+    createAccount("Pelle Peloton", "GB29 NWBK 6016 1331 9268 19");
+    createAccount("Teppo Tulppu", "VG96 VPVG 0000 0123 4567 8901");
+    createAccount("Kalle Korkki", "AE07 0331 2345 6789 0123 456");
+    createAccount("Aku Ankka", "TL38 0080 0123 4567 8910 157");
+    createAccount("Simo Sisu", "CH93 0076 2011 6238 5295 7");
+    createAccount("Musta Pekka", "SI56 2633 0001 2039 086");
+    createAccount("Mikki Hiiri", "NO93 8601 1117 947");
   }
   public boolean deleteAllAccounts() { return mDatabase.delete(DB_TABLE, null, null) > 0; }
+  //////////////////////////////////////////////////////
+  // Database creation helper
   //////////////////////////////////////////////////////
   private class DatabaseHelper extends SQLiteOpenHelper {
     DatabaseHelper(Context context) {
@@ -115,5 +122,4 @@ public class DatabaseAdapter {
       onCreate(db);
     }
   }
-  //////////////////////////////////////////////////////
 }

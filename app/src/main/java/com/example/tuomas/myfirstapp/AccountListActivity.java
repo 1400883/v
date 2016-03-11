@@ -10,12 +10,13 @@ import android.os.Bundle;
 // DONE: Add/edit duplicate confirmation / replace functionality (just change save button text and show instruction?)
 // DONE: Implement state saving and retrieval
 // DONE: Setup git repo and push
-// TODO: Test if everything required is in the project folder
+// DONE: Test if everything required is in the project folder
+// DONE: Add missing IBAN CCs and lengths
+
 // TODO: Comment code
 // TODO: MAKE SURE TO DISABLE DEBUGGING DATA RECREATION BEFORE SUBMITTING THE PROJECT!!!
 // TODO: Other orientations and screen sizes, hopefully got time for this (in my dreams...)
 // TODO: Convert DB operations into proper style (could use more _id instead of name)
-// TODO: Add missing rare IBAN CCs and lengths, see if could place them to XML
 // TODO: Animate / add other states to Add button
 // SKIP: Make db query async? Was REALLY slow at some point, blocking UI, but later appears to work ok
 public class AccountListActivity extends Activity {
@@ -58,17 +59,13 @@ public class AccountListActivity extends Activity {
       // First run -> generate ListView data from SQLite Database
       mDataManager.insertFreshDebugData();
     }
-    mDataManager.refreshAccountScreenView();
+    mDataManager.updateResultsToScreen();
   }
 
   @Override
   public void onResume() {
     super.onResume();
     mDataManager.openDatabase();
-
-    // this.getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_HIDDEN);
-    //mEventManager.hideSoftKeyboard(this);
-
   }
 
   @Override
@@ -81,14 +78,10 @@ public class AccountListActivity extends Activity {
 
   @Override
   public void onSaveInstanceState(Bundle outState) {
+    // Store necessary data to recover state
     SessionStorage storage = mDataManager.saveSession();
     outState.putSerializable("session", storage);
     super.onSaveInstanceState(outState);
-    // Log.d("A", mGuiManager.mGuiState.toString() + ", " + );
-    //outState.
-    // listviewBlockerButton[] visibilities
-    // newEditAccountContainer visibility
-    // if (visible)
   }
 
 }

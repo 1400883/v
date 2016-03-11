@@ -57,21 +57,22 @@ public class EventManager implements
     // Use listeners for new / edit account inputs only to clear potentially
     // visible error messages. This should improve usability a bit.
     ((EditText) mActivity.findViewById(R.id.nameInputField))
-      .addTextChangedListener(new CustomTextWatcher());
+      .addTextChangedListener(new EditTextWatcher());
     ((EditText) mActivity.findViewById(R.id.ibanInputField))
-      .addTextChangedListener(new CustomTextWatcher());
+      .addTextChangedListener(new EditTextWatcher());
 
     // Get rid of the almighty everlasting soft keyboard until explicitly called for
     LinearLayout rootContainer = (LinearLayout)mActivity.findViewById(R.id.rootContainer);
     setKeyboardHideListeners(rootContainer);
   }
-  private class CustomTextWatcher implements TextWatcher {
-    // Common listener for new / edit account input fields
+  // Common listener for new / edit account input fields
+  private class EditTextWatcher implements TextWatcher {
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
     @Override
     public void onTextChanged(CharSequence s, int start, int before, int count) {}
     @Override
+    // Clear visible validation error messages on field content change
     public void afterTextChanged(Editable s) { mGuiManager.clearErrorMessage(); }
   }
   private void setKeyboardHideListeners(View view) {
@@ -111,6 +112,7 @@ public class EventManager implements
   public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
   @Override
   public void onTextChanged(CharSequence s, int start, int before, int count) {
+    // Filter listview cursor result set based on typing
     mDataManager.getCursorAdapter().getFilter().filter(s.toString());
   }
   // ListView onItemClick listener
@@ -124,6 +126,7 @@ public class EventManager implements
   // New/Edit account button onClick listeners
   @Override
   public void onClick(View view) {
+    // Redirect calls to DataManager
     switch (view.getId()) {
       case R.id.addAccountButton:
         mGuiManager.addAction();

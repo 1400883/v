@@ -17,33 +17,37 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 public class GuiManager {
-  private Button guiBlockerButtons[];
-  private Button newAccountButton;
-  private EditText searchField;
-  private LinearLayout newEditAccountContainer;
-  private LinearLayout newEditAccountInputScreen;
-  private LinearLayout newEditAccountConfirmationScreen;
-  private TextView newEditAccountTitle;
-  private EditText nameInputField;
-  private EditText ibanInputField;
-  private TextView nameIbanErrorMessage;
-  private TextView newEditAccountConfirmationTitle;
-  private TextView newEditAccountDuplicateOldTitle;
-  private TextView newEditAccountDuplicateNewTitle;
-  private TextView newEditAccountDuplicateOldIban;
-  private TextView newEditAccountDuplicateNewIban;
-  private TextView newEditAccountConfirmationQuestion;
-  private Button saveButton;
-  private Button cancelButton;
-  private Button deleteButton;
-  private TextView toastView;
-  private Toast toast;
-  private ListView listview;
-  private FrameLayout listviewContainer;
-
   private String TAG = "GuiManager";
+
+  // GUI view groups and views
+  private Button mGuiBlockerButtons[];
+  private Button mNewAccountButton;
+  private EditText mSearchField;
+  private LinearLayout mNewEditAccountContainer;
+  private LinearLayout mNewEditAccountInputScreen;
+  private LinearLayout mNewEditAccountConfirmationScreen;
+  private TextView mNewEditAccountTitle;
+  private EditText mNameInputField;
+  private EditText mIbanInputField;
+  private TextView mNameIbanErrorMessage;
+  private TextView mNewEditAccountConfirmationTitle;
+  private TextView mNewEditAccountDuplicateOldTitle;
+  private TextView mNewEditAccountDuplicateNewTitle;
+  private TextView mNewEditAccountDuplicateOldIban;
+  private TextView mNewEditAccountDuplicateNewIban;
+  private TextView mNewEditAccountConfirmationQuestion;
+  private Button mSaveButton;
+  private Button mCancelButton;
+  private Button mDeleteButton;
+  private TextView mToastView;
+  private Toast mToast;
+  private ListView mListview;
+  private FrameLayout mListviewContainer;
+
+  // Maintain GUI states to keep track of location in the tree
   private GuiState mGuiState = GuiState.Main;
   private GuiState mPreviousGuiState = GuiState.Main;
+
   private Activity mActivity = null;
   private DataManager mDataManager;
   private EventManager mEventManager;
@@ -66,6 +70,8 @@ public class GuiManager {
   private GuiManager() {}
   public void updateReferences(Activity activity) {
     if (mActivity != activity) {
+      // Update activity references on activity restart.
+      // Should be no mem leaks here...
       mActivity = activity;
       if (mDataManager == null || mEventManager == null) {
         mDataManager = DataManager.get();
@@ -74,100 +80,116 @@ public class GuiManager {
       updateViews();
     }
   }
+  ///////////////////////////////////////////////
+  // GUI view reference setup
+  ///////////////////////////////////////////////
   private void updateViews() {
     // Blockers
-    guiBlockerButtons = new Button[2];
-    guiBlockerButtons[0] = (Button)mActivity.findViewById(R.id.searchBarBlockerButton);
-    guiBlockerButtons[1] = (Button)mActivity.findViewById(R.id.listviewBlockerButton);
+    mGuiBlockerButtons = new Button[2];
+    mGuiBlockerButtons[0] = (Button)mActivity.findViewById(R.id.searchBarBlockerButton);
+    mGuiBlockerButtons[1] = (Button)mActivity.findViewById(R.id.listviewBlockerButton);
 
     // Search bar area views
-    newAccountButton = (Button)mActivity.findViewById(R.id.addAccountButton);
-    searchField = (EditText)mActivity.findViewById(R.id.searchField);
+    mNewAccountButton = (Button)mActivity.findViewById(R.id.addAccountButton);
+    mSearchField = (EditText)mActivity.findViewById(R.id.searchField);
 
-    // Listview
-    listviewContainer = (FrameLayout)mActivity.findViewById(R.id.listViewContainer);
-    listview = (ListView)mActivity.findViewById(R.id.listview);
+    // Result set listview
+    mListviewContainer = (FrameLayout)mActivity.findViewById(R.id.listViewContainer);
+    mListview = (ListView)mActivity.findViewById(R.id.listview);
 
-    // New / edit account overlay container
-    ////////////////////////////////
-    newEditAccountContainer =
+    ///////////////////////////////////////////////
+    // 1 New / edit account overlay container
+    ///////////////////////////////////////////////
+    mNewEditAccountContainer =
       (LinearLayout)mActivity.findViewById(R.id.newEditAccountContainer);
 
-    // New / edit account input screen
-    ////////////////////////////////
-    newEditAccountInputScreen =
+    ///////////////////////////////////////////////
+    // 1.1 New / edit account input screen
+    ///////////////////////////////////////////////
+    mNewEditAccountInputScreen =
       (LinearLayout)mActivity.findViewById(R.id.newEditAccountInputScreen);
 
     // Title
-    newEditAccountTitle =
+    mNewEditAccountTitle =
       (TextView)mActivity.findViewById(R.id.newEditAccountTitle);
 
     // Owner name and IBAN inputs
-    nameInputField = (EditText)mActivity.findViewById(R.id.nameInputField);
-    nameInputField.setFilters(new InputFilter[] {
+    mNameInputField = (EditText)mActivity.findViewById(R.id.nameInputField);
+    // Limit length
+    mNameInputField.setFilters(new InputFilter[] {
       new InputFilter.LengthFilter(DataManager.MAX_OWNER_LENGTH)
     });
-    ibanInputField = (EditText)mActivity.findViewById(R.id.ibanInputField);
-    nameIbanErrorMessage = (TextView)mActivity.findViewById(R.id.nameIbanErrorMessage);
+    mIbanInputField = (EditText)mActivity.findViewById(R.id.ibanInputField);
 
-    // New / edit account duplicate confirmation screen
-    ////////////////////////////////
-    newEditAccountConfirmationScreen =
+    // Validation error message
+    mNameIbanErrorMessage = (TextView)mActivity.findViewById(R.id.nameIbanErrorMessage);
+
+    ///////////////////////////////////////////////
+    // 1.2 New / edit account duplicate confirmation screen
+    ///////////////////////////////////////////////
+    mNewEditAccountConfirmationScreen =
       (LinearLayout)mActivity.findViewById(R.id.newEditAccountConfirmationScreen);
 
     // Title
-    newEditAccountConfirmationTitle =
+    mNewEditAccountConfirmationTitle =
       (TextView)mActivity.findViewById(R.id.newEditAccountConfirmationTitle);
 
     // Old and new IBANs
-    newEditAccountDuplicateOldTitle =
+    mNewEditAccountDuplicateOldTitle =
       (TextView)mActivity.findViewById(R.id.newEditAccountDuplicateOldTitle);
-    newEditAccountDuplicateNewTitle =
+    mNewEditAccountDuplicateNewTitle =
       (TextView)mActivity.findViewById(R.id.newEditAccountDuplicateNewTitle);
-    newEditAccountDuplicateOldIban =
+    mNewEditAccountDuplicateOldIban =
       (TextView)mActivity.findViewById(R.id.newEditAccountDuplicateOldIban);
-    newEditAccountDuplicateNewIban =
+    mNewEditAccountDuplicateNewIban =
       (TextView)mActivity.findViewById(R.id.newEditAccountDuplicateNewIban);
 
     // Confirmation question text
-    newEditAccountConfirmationQuestion =
+    mNewEditAccountConfirmationQuestion =
       (TextView)mActivity.findViewById(R.id.newEditAccountConfirmationQuestion);
 
     // Button row
-    saveButton = (Button)mActivity.findViewById(R.id.saveButton);
-    cancelButton = (Button)mActivity.findViewById(R.id.cancelButton);
-    deleteButton = (Button)mActivity.findViewById(R.id.deleteButton);
+    mSaveButton = (Button)mActivity.findViewById(R.id.saveButton);
+    mCancelButton = (Button)mActivity.findViewById(R.id.cancelButton);
+    mDeleteButton = (Button)mActivity.findViewById(R.id.deleteButton);
 
+    ///////////////////////////////////////////////
     // Setup toast
+    ///////////////////////////////////////////////
     View toastLayout = mActivity.getLayoutInflater().inflate(
       R.layout.custom_toast,
       (ViewGroup)mActivity.findViewById(R.id.toastRoot));
 
-    toast = new Toast(mActivity.getApplicationContext());
-    toast.setView(toastLayout);
-    toast.setGravity(Gravity.CENTER, 0, 0);
-    toast.setDuration(Toast.LENGTH_SHORT);
-    toastView = (TextView)toastLayout.findViewById(R.id.newEditAccountToast);
+    mToast = new Toast(mActivity.getApplicationContext());
+    mToast.setView(toastLayout);
+    mToast.setGravity(Gravity.CENTER, 0, 0);
+    mToast.setDuration(Toast.LENGTH_SHORT);
+    mToastView = (TextView)toastLayout.findViewById(R.id.newEditAccountToast);
 
     setListviewFrameLayoutParameters(mActivity);
   }
   private void setListviewFrameLayoutParameters(Activity activity) {
     // For whatever reason, FrameLayout won't respect XML layout
     // MATCH_PARENT parameters, but insist on WRAP_CONTENT.
-    // Setting them here fixes it.
+    // Setting them on runtime fixes it.
     LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
       LinearLayout.LayoutParams.MATCH_PARENT,
       LinearLayout.LayoutParams.MATCH_PARENT);
-
-    listviewContainer.setLayoutParams(params);
+    mListviewContainer.setLayoutParams(params);
   }
+  ///////////////////////////////////////////////
+  // GUI state getters
   ///////////////////////////////////////////////
   public GuiState getGuiState() { return mGuiState; }
   public GuiState getPreviousGuiState() { return mPreviousGuiState; }
+  ///////////////////////////////////////////////
+  // GUI tree traversal management
+  // Add, Save and Cancel are accessed via GUI buttons
+  // Edit is accessed by touching listview item in the main screen
+  ///////////////////////////////////////////////
   public void addAction() {
-    // Show Add new account screen
-    //if (newEditAccountContainer.getVisibility() == View.INVISIBLE) {
     if (mGuiState == GuiState.Main) {
+      // Display Add new account screen
       updateScreen(NewDisplayState.Show, RequestedScreen.New, "", "");
       mPreviousGuiState = mGuiState;
       mGuiState = GuiState.New;
@@ -191,7 +213,7 @@ public class GuiManager {
         NewDisplayState.Show,
         mPreviousGuiState == GuiState.New
           ? RequestedScreen.New
-        // mPreviousGuiState == GuiState.Edit implied
+          // mPreviousGuiState == GuiState.Edit implied
           : RequestedScreen.Edit);
       GuiState currentGuiState = mGuiState;
       mGuiState = mPreviousGuiState;
@@ -200,11 +222,11 @@ public class GuiManager {
   }
   public void editAction(Cursor cursor) {
     if (mGuiState == GuiState.Main) {
-      // Get name and IBAN from the clicked listview item
+      // Get name and IBAN from the clicked mListview item
       int iNameColumn = cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER);
       int iIbanColumn = cursor.getColumnIndex(DatabaseAdapter.COLUMN_IBAN);
       String name = cursor.getString(iNameColumn);
-      // Store the given name.
+      // Store the given name at this point into session data storage.
       // Should the user later choose to overwrite the record
       // with the same owner name, auto-assume it's a wanted
       // operation and skip asking for confirmation.
@@ -215,10 +237,10 @@ public class GuiManager {
       // that matches modified values.
       mDataManager.setOriginalName(name);
       // Show IBAN as a consecutive line of characters, easier
-      // for the user to copy to clipboard (should the need be)
+      // for the user to copy it to clipboard (should the need be)
       String iban = mDataManager.removeWhitespaces(cursor.getString(iIbanColumn));
 
-      // Prepare and display Edit account screen
+      // Display Edit account screen
       updateScreen(
         NewDisplayState.Show, RequestedScreen.Edit, name, iban);
       mPreviousGuiState = mGuiState;
@@ -230,7 +252,11 @@ public class GuiManager {
     }
   }
   public void deleteAction() {
-    // Prepare and display Delete account screen
+    // Delete account action can only be reached through Edit account
+    // screen, where the user may have edited either or both of input
+    // fields prior to pressing del. Target delete action to the original
+    // entry, not modified values (even if they match something in the
+    // database).
     String originalName = mDataManager.getOriginalName();
     String originalIban = mDataManager.getIbanFromName(originalName);
     originalIban = mDataManager.formatIban(originalIban);
@@ -239,28 +265,33 @@ public class GuiManager {
       originalIban = mActivity.getString(R.string.internal_error);
     }
     String postTitle = mActivity.getString(R.string.deleteAccount_confirmationTitle);
+    // Display Delete account screen
     updateScreen(
-      NewDisplayState.Show, RequestedScreen.Delete, originalName, postTitle, originalIban);
+      NewDisplayState.Show,
+      RequestedScreen.Delete,
+      originalName,
+      postTitle,
+      originalIban);
     mPreviousGuiState = mGuiState;
     mGuiState = GuiState.Delete;
   }
   public void saveAction() {
-    String name = nameInputField.getText().toString();
-    String iban = ibanInputField.getText().toString();
-    // Apply nice visual formatting, which will be
-    // the format IBAN will be in in the database
+    String name = mNameInputField.getText().toString();
+    String iban = mIbanInputField.getText().toString();
+    // Apply nice visual grouping formatting, which is
+    // the format it will be stored in in the database
     iban = mDataManager.formatIban(iban);
 
     if (mGuiState == GuiState.New || mGuiState == GuiState.Edit) {
       // Add / edit account screen being displayed
-      boolean isNameValid = DataManager.InputValidator.isValidName(name);
-      boolean isIbanValid = DataManager.InputValidator.isValidIban(iban);
+      boolean isValidName = DataManager.InputValidator.isValidName(name);
+      boolean isValidIban = DataManager.InputValidator.isValidIban(iban);
 
-      if (isNameValid) {
+      if (isValidName) {
         setErrorMessageState(NewDisplayState.Hide, ErrorSource.Name);
-        if (isIbanValid) {
-          // Both valid
-          // NOTE: Using case-sensitive name comparison
+        if (isValidIban) {
+          // Both name and IBAN valid
+          // NOTE: Using case-sensitive name uniqueness comparison
           if (mDataManager.isUniqueName(name)) {
             if (mGuiState == GuiState.New) {
               // New name unique in the database -> create account
@@ -295,8 +326,13 @@ public class GuiManager {
             }
 
             // Show confirmation screen
-            updateScreen(NewDisplayState.Show, RequestedScreen.Confirm,
-              name, postTitle, oldIban, iban);
+            updateScreen(
+              NewDisplayState.Show,
+              RequestedScreen.Confirm,
+              name,
+              postTitle,
+              oldIban,
+              iban);
             mPreviousGuiState = mGuiState;
             mGuiState = GuiState.Confirm;
           }
@@ -307,7 +343,7 @@ public class GuiManager {
         }
       }
       else { // isNameValid() == false
-        if (isIbanValid) {
+        if (isValidIban) {
           // Invalid owner name
           setErrorMessageState(NewDisplayState.Show, ErrorSource.Name);
         }
@@ -336,7 +372,7 @@ public class GuiManager {
             Log.d(TAG, "D'ooh! Failed account deletion after replacement.");
           }
         }
-        mDataManager.refreshAccountScreenView();
+        mDataManager.updateResultsToScreen();
         displayToastMessage(
           OperationResult.Success, R.string.updateAccount_success);
       }
@@ -353,6 +389,8 @@ public class GuiManager {
       deleteAccount(originalName);
     }
   }
+  ///////////////////////////////////////////////
+  // Database command redirection & result message display
   ///////////////////////////////////////////////
   private void createAccount(String name, String iban) {
     if (mDataManager.createAccount(name, iban)) {
@@ -379,14 +417,14 @@ public class GuiManager {
     }
   }
   private void doAccountOperationAftermath(int messageId) {
-    mDataManager.refreshAccountScreenView();
+    mDataManager.updateResultsToScreen();
     displayToastMessage(OperationResult.Success, messageId);
     updateScreen(NewDisplayState.Hide, null);
     mPreviousGuiState = mGuiState;
     mGuiState = GuiState.Main;
   }
   private void displayToastMessage(OperationResult type, int messageId) {
-    toastView.setText(messageId);
+    mToastView.setText(messageId);
 
     // NOTE: getColor(int) was deprecated in API level 23.
     // Since API level 23, the signature has been getColor(int, Resources.Theme).
@@ -398,10 +436,12 @@ public class GuiManager {
       Build.VERSION.SDK_INT < 23
         ? mActivity.getResources().getColor(colorResource)
         : mActivity.getResources().getColor(colorResource, null);
-    toastView.setTextColor(color);
-    toast.show();
+    mToastView.setTextColor(color);
+    mToast.show();
   }
-  /////////////////////////////////////////////
+  ///////////////////////////////////////////////
+  // Error message handling
+  ///////////////////////////////////////////////
   public void clearErrorMessage() { setErrorMessageState(NewDisplayState.Hide, null); }
   private void setErrorMessageState(NewDisplayState state, ErrorSource source) {
     // NOTE: if state == NewDisplayState.Hide, source may be null
@@ -409,21 +449,23 @@ public class GuiManager {
       String errorString =
         source == ErrorSource.Name
           ? mActivity.getString(R.string.newEditAccount_nameError)
-        : source == ErrorSource.Iban
+          : source == ErrorSource.Iban
           ? mActivity.getString(R.string.newEditAccount_ibanError)
           // source == ErrorSource.Both implied
-        : mActivity.getString(R.string.newEditAccount_nameError) + " " +
+          : mActivity.getString(R.string.newEditAccount_nameError) + " " +
           mActivity.getString(R.string.newEditAccount_ibanError);
-      nameIbanErrorMessage.setText(errorString);
-      nameIbanErrorMessage.setVisibility(View.VISIBLE);
+      mNameIbanErrorMessage.setText(errorString);
+      mNameIbanErrorMessage.setVisibility(View.VISIBLE);
       return;
     }
-    nameIbanErrorMessage.setVisibility(View.INVISIBLE);
+    mNameIbanErrorMessage.setVisibility(View.INVISIBLE);
   }
-  /////////////////////////////////////////////
+  ///////////////////////////////////////////////
+  // Screen content updating based on current location in tree
+  ///////////////////////////////////////////////
   public void updateScreen(NewDisplayState state,
-                            RequestedScreen content,
-                            String... additionalData) {
+                           RequestedScreen content,
+                           String... additionalData) {
     // NOTE: Keep previous name and input field contents by not passing additionalData
     // NOTE: if state == NewDisplayState.Hide, RequestedScreen may be null (not used)
 
@@ -437,7 +479,7 @@ public class GuiManager {
           // additionalData[]: name, iban OR absent (empty array)
 
           // Set main title
-          newEditAccountTitle.setText(content == RequestedScreen.New
+          mNewEditAccountTitle.setText(content == RequestedScreen.New
             ? R.string.newAccount_title
             : R.string.editAccount_title);
 
@@ -448,24 +490,24 @@ public class GuiManager {
           if (additionalData.length > 0) {
             String name = additionalData[0];
             String iban = additionalData[1];
-            nameInputField.setText(name);
-            ibanInputField.setText(iban);
+            mNameInputField.setText(name);
+            mIbanInputField.setText(iban);
           }
-          nameInputField.requestFocus();
+          mNameInputField.requestFocus();
 
           // Button texts
-          saveButton.setText(R.string.newEditAccount_saveButton);
-          cancelButton.setText(R.string.newEditAccount_cancelButton);
+          mSaveButton.setText(R.string.newEditAccount_saveButton);
+          mCancelButton.setText(R.string.newEditAccount_cancelButton);
 
           // Show / hide delete button
-          deleteButton.setVisibility(content == RequestedScreen.New
+          mDeleteButton.setVisibility(content == RequestedScreen.New
             ? View.GONE
             : View.VISIBLE);
 
           // Hide confirmation layout container
-          newEditAccountConfirmationScreen.setVisibility(View.INVISIBLE);
+          mNewEditAccountConfirmationScreen.setVisibility(View.INVISIBLE);
           // Show add / edit input layout container
-          newEditAccountInputScreen.setVisibility(View.VISIBLE);
+          mNewEditAccountInputScreen.setVisibility(View.VISIBLE);
           break;
         case Delete:
         case Confirm:
@@ -473,72 +515,75 @@ public class GuiManager {
           // additionalData[]: name, @string/deleteAccount_confirmationTitle, iban
 
           // Set main title
-          newEditAccountTitle.setText(content == RequestedScreen.Delete
+          mNewEditAccountTitle.setText(content == RequestedScreen.Delete
             ? R.string.deleteAccount_title
             : R.string.editAccount_title);
 
           // Set confirmation title
-          newEditAccountConfirmationTitle.setText(
+          mNewEditAccountConfirmationTitle.setText(
             "\"" + additionalData[0] + "\"" + additionalData[1]);
 
           // Set old and new IBANs
           ///////////////////////////////////
 
           // Show / Hide old IBAN title
-          newEditAccountDuplicateOldTitle.setVisibility(content == RequestedScreen.Delete
+          mNewEditAccountDuplicateOldTitle.setVisibility(content == RequestedScreen.Delete
             ? View.INVISIBLE : View.VISIBLE);
 
           // Replace new IBAN title
-          newEditAccountDuplicateNewTitle.setText(content == RequestedScreen.Delete
+          mNewEditAccountDuplicateNewTitle.setText(content == RequestedScreen.Delete
             ? R.string.newEditAccount_deleteIbanTitle
             : R.string.newEditAccount_duplicateNewIbanTitle);
 
           // Show / hide old IBAN
-          newEditAccountDuplicateOldIban.setVisibility(content == RequestedScreen.Delete
+          mNewEditAccountDuplicateOldIban.setVisibility(content == RequestedScreen.Delete
             ? View.GONE : View.VISIBLE);
 
           // Replace confirmation question
-          newEditAccountConfirmationQuestion.setText(content == RequestedScreen.Delete
+          mNewEditAccountConfirmationQuestion.setText(content == RequestedScreen.Delete
             ? R.string.newEditAccount_deleteConfirmation
             : R.string.newEditAccount_duplicateConfirmation);
 
           if (content == RequestedScreen.Delete) {
             // Replace new IBAN
-            newEditAccountDuplicateNewIban.setText(additionalData[2]);
+            mNewEditAccountDuplicateNewIban.setText(additionalData[2]);
           }
           else {
             // Replace old and new IBANs
-            newEditAccountDuplicateOldIban.setText(additionalData[2]);
-            newEditAccountDuplicateNewIban.setText(additionalData[3]);
+            mNewEditAccountDuplicateOldIban.setText(additionalData[2]);
+            mNewEditAccountDuplicateNewIban.setText(additionalData[3]);
           }
 
           // Set button texts
-          saveButton.setText(R.string.newEditAccount_yesButton);
-          cancelButton.setText(R.string.newEditAccount_noButton);
+          mSaveButton.setText(R.string.newEditAccount_yesButton);
+          mCancelButton.setText(R.string.newEditAccount_noButton);
 
           // Hide delete button
-          deleteButton.setVisibility(View.GONE);
+          mDeleteButton.setVisibility(View.GONE);
 
           // Hide add / edit input layout container
-          newEditAccountInputScreen.setVisibility(View.INVISIBLE);
+          mNewEditAccountInputScreen.setVisibility(View.INVISIBLE);
           // Show confirmation layout container
-          newEditAccountConfirmationScreen.setVisibility(View.VISIBLE);
+          mNewEditAccountConfirmationScreen.setVisibility(View.VISIBLE);
           break;
       }
       // Show screen layout container
-      newEditAccountContainer.setVisibility(View.VISIBLE);
+      mNewEditAccountContainer.setVisibility(View.VISIBLE);
     }
     else { // state == NewDisplayState.Hide
       // Hide screen layout container
-      newEditAccountContainer.setVisibility(View.INVISIBLE);
+      mNewEditAccountContainer.setVisibility(View.INVISIBLE);
     }
   }
   private void setBlockerButtonDisplayState(NewDisplayState state) {
-    for (Button button : guiBlockerButtons) {
+    // Disabling GUI layers below the active screen area
+    // is implemented using transparent buttons that cover areas
+    // that need to be activated / inactivated. Accessibility is
+    // controller by switching button visibility.
+    for (Button button : mGuiBlockerButtons) {
       button.setVisibility(state == NewDisplayState.Show
         ? View.VISIBLE
         : View.INVISIBLE);
     }
   }
-  /////////////////////////////////////////////
 }
