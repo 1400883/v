@@ -6,5 +6,5 @@
 - Add / modify / delete entries
 - Simple name / IBAN search functionality
 - Uses SQLite as permanent data storage
-- Looks primitive + virtually no scaling based on display size :(
+- Looks primitive + virtually no scaling based on display size :( Looks somewhat ok on small smartphone screens.
 - To create a few DB entries to start with, uncomment mDataManager.insertFreshDebugData() in AccountListActivity.onCreate().
