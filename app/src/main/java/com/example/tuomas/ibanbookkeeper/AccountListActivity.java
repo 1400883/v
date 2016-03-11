@@ -57,7 +57,7 @@ public class AccountListActivity extends Activity {
     mDataManager.restoreSession(savedInstanceState);
     if (savedInstanceState == null) {
       // First run -> generate ListView data from SQLite Database
-      mDataManager.insertFreshDebugData();
+      // mDataManager.insertFreshDebugData();
     }
     mDataManager.updateResultsToScreen();
   }
