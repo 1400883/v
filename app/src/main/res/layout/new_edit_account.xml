@@ -51,7 +51,8 @@
                         android:layout_toRightOf="@+id/ownerTitle"
                         android:layout_toEndOf="@+id/ownerTitle"
                         style="@style/newEditAccountFieldInputHorizontal"
-                        android:hint="@string/newEditAccount_nameHint"/>
+                        android:hint="@string/newEditAccount_nameHint"
+                        />
 
                     <TextView
                         android:text="@string/newEditAccount_iban"
@@ -88,7 +89,7 @@
                 android:orientation="vertical"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                >
+                android:visibility="invisible">
 
                 <TextView
                     android:id="@+id/newEditAccountConfirmationTitle"
@@ -161,22 +162,6 @@
                     android:layout_marginRight="3dp"
                     android:layout_marginTop="10dp"
                     android:id="@+id/newEditAccountConfirmationQuestion"/>
-            </LinearLayout>
-
-            <LinearLayout
-                android:orientation="horizontal"
-                android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:visibility="invisible">
-
-                <TextView
-                    style="@style/newEditAccountBasicText"
-                    android:id="@+id/textView"
-                    android:text="@string/deleteAccount_title"
-                    android:layout_marginLeft="3dp"
-                    android:layout_marginRight="3dp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"/>
             </LinearLayout>
 
         </FrameLayout>

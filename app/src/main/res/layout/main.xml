@@ -19,7 +19,11 @@
 
             <Button
                 android:id="@+id/addAccountButton"
-                style="@style/newAccountButton"/>
+                style="@style/newAccountButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Add"
+                />
             <!--
             <ImageButton
                 android:layout_width="wrap_content"

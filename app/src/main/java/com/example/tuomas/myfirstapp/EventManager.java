@@ -21,35 +21,27 @@ public class EventManager implements
   private DataManager mDataManager;
   private GuiManager mGuiManager;
   private static EventManager instance = null;
-
   ///////////////////////////////////////////////
-  // Singleton setup. Reference to activity and other managers
-  // must be set before requesting instance via singleton
+  // Singleton
   ///////////////////////////////////////////////
-
-  public void setActivity(Activity activity) {
-    if (mActivity != activity) {
-      mActivity = activity;
-    }
-  }
-  public void setManagers(DataManager dataManager, GuiManager guiManager) {
-    mDataManager = dataManager;
-    mGuiManager = guiManager;
-  }
-
   public static EventManager get() {
     if (instance == null) {
       instance = new EventManager();
     }
     return instance;
   }
-
   private EventManager() {}
-
+  public void updateReferences(Activity activity) {
+    if (mActivity != activity) {
+      mActivity = activity;
+      if (mDataManager == null || mGuiManager == null) {
+        mDataManager = DataManager.get();
+        mGuiManager = GuiManager.get();
+      }
+    }
+  }
   ///////////////////////////////////////////////
-
-  ///////////////////////////////////////////////
-  // Event listener setup method
+  // Event listeners
   ///////////////////////////////////////////////
   public void setEventListeners() {
     // Main screen
@@ -73,9 +65,8 @@ public class EventManager implements
     LinearLayout rootContainer = (LinearLayout)mActivity.findViewById(R.id.rootContainer);
     setKeyboardHideListeners(rootContainer);
   }
-
-  // Common listener for new / edit account input fields
   private class CustomTextWatcher implements TextWatcher {
+    // Common listener for new / edit account input fields
     @Override
     public void beforeTextChanged(CharSequence s, int start, int count, int after) {}
     @Override
@@ -83,7 +74,6 @@ public class EventManager implements
     @Override
     public void afterTextChanged(Editable s) { mGuiManager.clearErrorMessage(); }
   }
-
   private void setKeyboardHideListeners(View view) {
     // Set up touch listeners for non-editable text views to hide soft keyboard
     if(!(view instanceof EditText)) {
@@ -103,7 +93,6 @@ public class EventManager implements
       }
     }
   }
-
   private void hideSoftKeyboard(Activity activity) {
     InputMethodManager imManager =
       (InputMethodManager)activity.getSystemService(Activity.INPUT_METHOD_SERVICE);
@@ -115,10 +104,7 @@ public class EventManager implements
       }
     }
   }
-
-  ///////////////////////////////////////////////
-  // SearchBar EditText listeners
-  ///////////////////////////////////////////////
+  // Search bar EditText listeners
   @Override
   public void afterTextChanged(Editable s) {}
   @Override
@@ -127,25 +113,15 @@ public class EventManager implements
   public void onTextChanged(CharSequence s, int start, int before, int count) {
     mDataManager.getCursorAdapter().getFilter().filter(s.toString());
   }
-
-  ///////////////////////////////////////////////
   // ListView onItemClick listener
-  ///////////////////////////////////////////////
   @Override
-  public void onItemClick(
-    AdapterView<?> listView,
-    View view,
-    int position,
-    long id) {
+  public void onItemClick(AdapterView<?> listView, View view, int position, long id) {
     // Get the cursor containing data at the clicked row
     Cursor cursor = (Cursor) listView.getItemAtPosition(position);
     // Show edit screen
     mGuiManager.editAction(cursor);
   }
-
-  ///////////////////////////////////////////////
   // New/Edit account button onClick listeners
-  ///////////////////////////////////////////////
   @Override
   public void onClick(View view) {
     switch (view.getId()) {

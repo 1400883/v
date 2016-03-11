@@ -49,25 +49,14 @@ public class GuiManager {
   private EventManager mEventManager;
   private static GuiManager instance = null;
 
-  private enum GuiState { Main, New, Edit, Delete, Confirm }
+  public enum GuiState { Main, New, Edit, Delete, Confirm }
+  public enum NewDisplayState { Show, Hide };
+  public enum RequestedScreen { New, Edit, Delete, Confirm}
   private enum OperationResult { Success, Failure }
-  private enum NewDisplayState { Show, Hide };
-  private enum RequestedScreen { New, Edit, Delete, Confirm}
   private enum ErrorSource { Name, Iban, Both }
   ///////////////////////////////////////////////
-  // Singleton setup. Reference to activity and other managers
-  // must be set before requesting instance via singleton
+  // Singleton
   ///////////////////////////////////////////////
-  public void setActivity(Activity activity) {
-    if (mActivity != activity) {
-      mActivity = activity;
-      updateViews();
-    }
-  }
-  public void setManagers(EventManager eventManager, DataManager dataManager) {
-    mDataManager = dataManager;
-    mEventManager = eventManager;
-  }
   public static GuiManager get() {
     if (instance == null) {
       instance = new GuiManager();
@@ -75,7 +64,16 @@ public class GuiManager {
     return instance;
   }
   private GuiManager() {}
-  ///////////////////////////////////////////////
+  public void updateReferences(Activity activity) {
+    if (mActivity != activity) {
+      mActivity = activity;
+      if (mDataManager == null || mEventManager == null) {
+        mDataManager = DataManager.get();
+        mEventManager = EventManager.get();
+      }
+      updateViews();
+    }
+  }
   private void updateViews() {
     // Blockers
     guiBlockerButtons = new Button[2];
@@ -164,12 +162,14 @@ public class GuiManager {
     listviewContainer.setLayoutParams(params);
   }
   ///////////////////////////////////////////////
+  public GuiState getGuiState() { return mGuiState; }
+  public GuiState getPreviousGuiState() { return mPreviousGuiState; }
   public void addAction() {
     // Show Add new account screen
     //if (newEditAccountContainer.getVisibility() == View.INVISIBLE) {
     if (mGuiState == GuiState.Main) {
       updateScreen(NewDisplayState.Show, RequestedScreen.New, "", "");
-      mPreviousGuiState = GuiState.Main;
+      mPreviousGuiState = mGuiState;
       mGuiState = GuiState.New;
     }
     else {
@@ -178,28 +178,27 @@ public class GuiManager {
     }
   }
   public void cancelAction() {
-    //if (newEditAccountInputScreen.getVisibility() == View.VISIBLE) {
     if (mGuiState == GuiState.New || mGuiState == GuiState.Edit) {
       // Add / edit account screen being displayed
       updateScreen(NewDisplayState.Hide, null);
       mPreviousGuiState = mGuiState;
       mGuiState = GuiState.Main;
     }
-    else {
+    else { // mGuiState == GuiState.Confirm || mGuiState == GuiState.Delete implied
       // Duplicate owner name confirmation screen being displayed
       // -> return back to previous screen (Add account / Edit account)
       updateScreen(
         NewDisplayState.Show,
         mPreviousGuiState == GuiState.New
           ? RequestedScreen.New
-          // mPreviousGuiState == GuiState.Edit implied
+        // mPreviousGuiState == GuiState.Edit implied
           : RequestedScreen.Edit);
+      GuiState currentGuiState = mGuiState;
       mGuiState = mPreviousGuiState;
-      mPreviousGuiState = GuiState.Confirm;
+      mPreviousGuiState = currentGuiState; // GuiState.Confirm or GuiState.Delete
     }
   }
   public void editAction(Cursor cursor) {
-    //if (newEditAccountContainer.getVisibility() == View.INVISIBLE) {
     if (mGuiState == GuiState.Main) {
       // Get name and IBAN from the clicked listview item
       int iNameColumn = cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER);
@@ -209,7 +208,12 @@ public class GuiManager {
       // Should the user later choose to overwrite the record
       // with the same owner name, auto-assume it's a wanted
       // operation and skip asking for confirmation.
-      mDataManager.setOriginalEditName(name);
+      // This is also used in delete functionality, when the
+      // user may have modified account owner name and/or IBAN
+      // fields in edit screen before pressing Del. This should
+      // lead to deletion of the original entry, not one (if any)
+      // that matches modified values.
+      mDataManager.setOriginalName(name);
       // Show IBAN as a consecutive line of characters, easier
       // for the user to copy to clipboard (should the need be)
       String iban = mDataManager.removeWhitespaces(cursor.getString(iIbanColumn));
@@ -227,7 +231,7 @@ public class GuiManager {
   }
   public void deleteAction() {
     // Prepare and display Delete account screen
-    String originalName = mDataManager.getOriginalEditName();
+    String originalName = mDataManager.getOriginalName();
     String originalIban = mDataManager.getIbanFromName(originalName);
     originalIban = mDataManager.formatIban(originalIban);
     if (originalIban.equals("")) {
@@ -239,9 +243,6 @@ public class GuiManager {
       NewDisplayState.Show, RequestedScreen.Delete, originalName, postTitle, originalIban);
     mPreviousGuiState = mGuiState;
     mGuiState = GuiState.Delete;
-    // String originalName = mDataManager.getOriginalEditName();
-    // deleteAccount(originalName);
-    // int id = mDataManager.getIdFromName(originalName);
   }
   public void saveAction() {
     String name = nameInputField.getText().toString();
@@ -250,7 +251,6 @@ public class GuiManager {
     // the format IBAN will be in in the database
     iban = mDataManager.formatIban(iban);
 
-    //if (newEditAccountInputScreen.getVisibility() == View.VISIBLE) {
     if (mGuiState == GuiState.New || mGuiState == GuiState.Edit) {
       // Add / edit account screen being displayed
       boolean isNameValid = DataManager.InputValidator.isValidName(name);
@@ -266,15 +266,15 @@ public class GuiManager {
               // New name unique in the database -> create account
               createAccount(name, iban);
             }
-            else {
+            else { // mGuiState == GuiState.Edit implied
               // Name changed to unique via editing an existing record
               // -> do replacement
-              String originalName = mDataManager.getOriginalEditName();
+              String originalName = mDataManager.getOriginalName();
               int originalId = mDataManager.getIdFromName(originalName);
               replaceAccount(originalId, name, iban);
             }
           }
-          else if (mDataManager.isSameName(name) && mGuiState == GuiState.Edit) {
+          else if (mGuiState == GuiState.Edit && mDataManager.isSameAsOriginalName(name)) {
             // Name not unique but remained the same after editing
             // -> replace without confirmation. The original record
             // will be overwritten, so no need to delete anything.
@@ -320,11 +320,7 @@ public class GuiManager {
     else if (mGuiState == GuiState.Confirm){
       // Duplicate entry confirmation screen being displayed
       int idToReplaceTo = mDataManager.getIdFromName(name);
-      // String originalId = mDataManager.getIdFromName()
-      // new -> replace by name
-      // edit -> replace by name, delete by original name's id
       if (mDataManager.replaceAccount(idToReplaceTo, name, iban)) {
-        //if (!isNewAccountOrigin()) {
         if (mPreviousGuiState == GuiState.Edit) {
           // Replacement was done via Edit account feature, so another
           // record was replaced with the edited data. The original
@@ -334,15 +330,13 @@ public class GuiManager {
           // but they _should_ be unique in the database at all times,
           // by the app design. This code should totally be modified
           // to store and use ids always if available, though.
-          String originalName = mDataManager.getOriginalEditName();
+          String originalName = mDataManager.getOriginalName();
           //int idToReplaceFrom = mDataManager.getIdFromName(originalName);
-          if (mDataManager.deleteAccount(originalName)) {
-            mDataManager.refreshAccountData();
-          }
-          else {
+          if (!mDataManager.deleteAccount(originalName)) {
             Log.d(TAG, "D'ooh! Failed account deletion after replacement.");
           }
         }
+        mDataManager.refreshAccountScreenView();
         displayToastMessage(
           OperationResult.Success, R.string.updateAccount_success);
       }
@@ -354,8 +348,8 @@ public class GuiManager {
       mPreviousGuiState = mGuiState;
       mGuiState = GuiState.Main;
     }
-    else { // mGuiState == GuiState.
-      String originalName = mDataManager.getOriginalEditName();
+    else { // mGuiState == GuiState.Delete
+      String originalName = mDataManager.getOriginalName();
       deleteAccount(originalName);
     }
   }
@@ -385,7 +379,7 @@ public class GuiManager {
     }
   }
   private void doAccountOperationAftermath(int messageId) {
-    mDataManager.refreshAccountData();
+    mDataManager.refreshAccountScreenView();
     displayToastMessage(OperationResult.Success, messageId);
     updateScreen(NewDisplayState.Hide, null);
     mPreviousGuiState = mGuiState;
@@ -427,7 +421,7 @@ public class GuiManager {
     nameIbanErrorMessage.setVisibility(View.INVISIBLE);
   }
   /////////////////////////////////////////////
-  private void updateScreen(NewDisplayState state,
+  public void updateScreen(NewDisplayState state,
                             RequestedScreen content,
                             String... additionalData) {
     // NOTE: Keep previous name and input field contents by not passing additionalData

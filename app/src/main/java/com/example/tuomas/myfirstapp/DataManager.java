@@ -1,8 +1,8 @@
 package com.example.tuomas.myfirstapp;
 
 import android.app.Activity;
-import android.content.Context;
 import android.database.Cursor;
+import android.os.Bundle;
 import android.util.Log;
 import android.widget.EditText;
 import android.widget.FilterQueryProvider;
@@ -15,68 +15,148 @@ public class DataManager {
   private SimpleCursorAdapter mCursorAdapter;
 
   private String TAG = "DataManager";
-  private Activity mActivity = null;
+  private Activity mActivity;
   private GuiManager mGuiManager;
   private EventManager mEventManager;
-  private static DataManager instance = null;
+  private SessionStorage mSessionStorage;
+  private static DataManager instance;
+
+  private static String[] fromColumns;
+  private static int[] toViews;
+  public static final int MAX_OWNER_LENGTH = 30;
 
   private int IBAN_GROUPSIZE = 4;
-  private String mOriginalEditName;
 
-  public static final int MAX_OWNER_LENGTH = 30;
-  ///////////////////////////////////////////////
-  // Singleton setup. Reference to activity and other managers
-  // must be set before requesting instance via singleton
-  ///////////////////////////////////////////////
+  static {
+    // SimpleCursorAdapter source columns
+    fromColumns = new String[]{
+      DatabaseAdapter.COLUMN_OWNER,
+      DatabaseAdapter.COLUMN_IBAN,
+    };
+    // SimpleCursorAdapter target views
+    toViews = new int[]{
+      R.id.owner,
+      R.id.iban
+    };
+  }
 
-  public void setActivity(Activity activity) {
-    if (mActivity != activity) {
-      mActivity = activity;
-      if (mDatabaseAdapter == null) {
-        mDatabaseAdapter = new DatabaseAdapter(mActivity);
-      }
-      else {
-        mDatabaseAdapter.updateContext(mActivity);
+  public SessionStorage saveSession() {
+    EditText nameInput = (EditText)mActivity.findViewById(R.id.nameInputField);
+    EditText ibanInput = (EditText)mActivity.findViewById(R.id.ibanInputField);
+
+    mSessionStorage.setCurrentName(nameInput.getText().toString());
+    mSessionStorage.setCurrentIban(ibanInput.getText().toString());
+    // Original name that the user may have replaced in Edit account screen will
+    // be (and by this point in execution, has been) stored by GuiManager as needed
+    return mSessionStorage;
+  }
+  public void restoreSession(Bundle bundle) {
+    if (bundle != null) {
+      mSessionStorage = (SessionStorage)bundle.getSerializable("session");
+      switch (mGuiManager.getGuiState()) {
+        case New:
+          mGuiManager.updateScreen(
+            GuiManager.NewDisplayState.Show, GuiManager.RequestedScreen.New);
+        case Edit:
+          mGuiManager.updateScreen(
+            GuiManager.NewDisplayState.Show, GuiManager.RequestedScreen.Edit);
+          break;
+        case Confirm:
+          boolean wasNewState =
+            mGuiManager.getPreviousGuiState() == GuiManager.GuiState.New;
+          String currentName = mSessionStorage.getCurrentName();
+          mGuiManager.updateScreen(
+            GuiManager.NewDisplayState.Show,
+            GuiManager.RequestedScreen.Confirm,
+            currentName,
+            wasNewState
+              ? mActivity.getString(R.string.newAccount_duplicateTitle)
+              : mActivity.getString(R.string.editAccount_duplicateTitle),
+            getIbanFromName(currentName),
+            formatIban(mSessionStorage.getCurrentIban()));
+          break;
+        case Delete:
+          String originalName = mSessionStorage.getOriginalName();
+          mGuiManager.updateScreen(
+            GuiManager.NewDisplayState.Show,
+            GuiManager.RequestedScreen.Delete,
+            originalName,
+            mActivity.getString(R.string.deleteAccount_confirmationTitle),
+            getIbanFromName(originalName));
+          break;
       }
     }
-    mCursorAdapter = createCursorAdapter(mActivity);
   }
-
-  public void setManagers(EventManager eventManager, GuiManager guiManager) {
-    mGuiManager = guiManager;
-    mEventManager = eventManager;
-  }
-
+  ///////////////////////////////////////////////
+  // Singleton setup
+  ///////////////////////////////////////////////
   public static DataManager get() {
     if (instance == null) {
       instance = new DataManager();
     }
     return instance;
   }
-
   private DataManager() {}
-
-  ///////////////////////////////////////////////
-
-  public void openDatabase() {
-    mDatabaseAdapter.open();
+  public void updateReferences(Activity activity) {
+    if (mActivity != activity) {
+      mActivity = activity;
+      if (mGuiManager == null || mEventManager == null) {
+        mGuiManager = GuiManager.get();
+        mEventManager = EventManager.get();
+      }
+      if (mSessionStorage == null) {
+        mSessionStorage = new SessionStorage();
+      }
+      updateAdapters();
+    }
   }
-  public void closeDatabase() { mDatabaseAdapter.close(); }
+  private void updateAdapters() {
+    // Needs to be always recreated on activity change
+    mDatabaseAdapter = new DatabaseAdapter(mActivity);
 
-  public void insertDebugData() {
+    // Create cursor adapter initially without a cursor.
+    // Bind source columns & target layout and views.
+    mCursorAdapter = new SimpleCursorAdapter(
+      mActivity,
+      R.layout.listview_item,
+      null,
+      fromColumns,
+      toViews,
+      0);
+    setCursorAdapterDataSource();
+    setCursorAdapterResultFilter();
+  }
+  private void setCursorAdapterDataSource() {
+    ((ListView)mActivity.findViewById(R.id.listview))
+      .setAdapter(mCursorAdapter);
+  }
+  private void setCursorAdapterResultFilter() {
+    mCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
+      public Cursor runQuery(CharSequence constraint) {
+        return mDatabaseAdapter.getAccountsByOwnerOrIban(constraint.toString());
+      }
+    });
+  }
+  ///////////////////////////////////////////////
+  public void openDatabase() { mDatabaseAdapter.open(); }
+  public void closeDatabase() { mDatabaseAdapter.close(); }
+  ///////////////////////////////////////////////
+  public void insertFreshDebugData() {
     // Clean all data from database
     mDatabaseAdapter.deleteAllAccounts();
     // Add some data into database
-    mDatabaseAdapter.insertSomeAccounts();
+    mDatabaseAdapter.insertDebugDataAccounts();
     // Update data display
-    mCursorAdapter.changeCursor(mDatabaseAdapter.getAccountsByOwnerOrIban(""));
+    mCursorAdapter.changeCursor(mDatabaseAdapter.getAccountsByOwnerOrIban());
   }
-  public void refreshAccountData() {
+  ///////////////////////////////////////////////
+  public void refreshAccountScreenView() {
     // Invoke search bar callback manually with current
     // filter text to force listview display update.
     CharSequence text = ((EditText)mActivity.findViewById(R.id.searchField)).getText();
     mEventManager.onTextChanged(text, 0, 0, 0);
   }
+  ///////////////////////////////////////////////
   public boolean createAccount(String name, String iban) {
     return mDatabaseAdapter.createAccount(name, iban) > -1;
   }
@@ -87,50 +167,16 @@ public class DataManager {
     int id = getIdFromName(name);
     return mDatabaseAdapter.deleteAccount(id) == 1;
   }
+  ///////////////////////////////////////////////
   public SimpleCursorAdapter getCursorAdapter() { return mCursorAdapter; }
-  public void setDataSource() {
-    ((ListView)mActivity.findViewById(R.id.listview))
-      .setAdapter(mCursorAdapter);
+  ///////////////////////////////////////////////
+  public void setOriginalName(String name) { mSessionStorage.setOriginalName(name); }
+  public String getOriginalName() { return mSessionStorage.getOriginalName(); }
+  public boolean isSameAsOriginalName(String name) {
+    return mSessionStorage.getOriginalName().equals(name);
   }
-  public void setResultFilter() {
-    mCursorAdapter.setFilterQueryProvider(new FilterQueryProvider() {
-      public Cursor runQuery(CharSequence constraint) {
-        return mDatabaseAdapter.getAccountsByOwnerOrIban(constraint.toString());
-      }
-    });
-  }
-
-  private SimpleCursorAdapter createCursorAdapter(Context context) {
-    // Source columns
-    String[] fromColumns = new String[]{
-      DatabaseAdapter.COLUMN_OWNER,
-      DatabaseAdapter.COLUMN_IBAN,
-    };
-
-    // Target views
-    int[] toViews = new int[]{
-      R.id.owner,
-      R.id.iban,
-    };
-
-    // Create the adapter initially without a cursor.
-    // Bind source columns & target layout and views.
-    return new SimpleCursorAdapter(
-      context,
-      R.layout.listview_item,
-      null,
-      fromColumns,
-      toViews,
-      0);
-  }
-
-  public void setOriginalEditName(String name) {
-    mOriginalEditName = name;
-  }
-  public String getOriginalEditName() { return mOriginalEditName; }
-  public boolean isSameName(String name) { return mOriginalEditName.equals(name); }
   public boolean isUniqueName(String name) {
-    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban("");
+    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban();
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
@@ -141,18 +187,8 @@ public class DataManager {
     }
     return true;
   }
-  public String formatIban(String iban) {
-    // Reformat iban:
-    // - remove spaces
-    // - convert to uppercase
-    // - divide into groups, each separated by space
-    return
-      removeWhitespaces(iban)
-      .toUpperCase()
-      .replaceAll("(.{0," + IBAN_GROUPSIZE + "})", "$1 ").trim();
-  }
   public int getIdFromName(String name) {
-    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban("");
+    Cursor cursor = mDatabaseAdapter.getAccountsByOwnerOrIban();
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
@@ -164,7 +200,7 @@ public class DataManager {
     return -1;
   }
   public String getIbanFromName(String name) /*throws Exception */ {
-    Cursor cursor =  mDatabaseAdapter.getAccountsByOwnerOrIban("");
+    Cursor cursor =  mDatabaseAdapter.getAccountsByOwnerOrIban();
     cursor.moveToFirst();
     for (int i = 0; i < cursor.getCount(); ++i) {
       String owner = cursor.getString(cursor.getColumnIndex(DatabaseAdapter.COLUMN_OWNER));
@@ -177,9 +213,19 @@ public class DataManager {
     // throw new Exception("Owner '" + name + "' did not match any account.");
     return "";
   }
-
+  ///////////////////////////////////////////////
+  public String formatIban(String iban) {
+    // Reformat iban:
+    // - remove spaces
+    // - convert to uppercase
+    // - divide into groups, each separated by space
+    return
+      removeWhitespaces(iban)
+      .toUpperCase()
+      .replaceAll("(.{0," + IBAN_GROUPSIZE + "})", "$1 ").trim();
+  }
   public String removeWhitespaces(String input) { return input.replaceAll("\\s", ""); }
-
+  ///////////////////////////////////////////////
 
   ///////////////////////////////////////////////
   // Input validator inner class
@@ -205,14 +251,11 @@ public class DataManager {
 
       chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ";
     }
-
     //////////////////////////////////////////////////////
-
     public static boolean isValidName(String name) {
       // Non null and else than empty / only whitespaces
       return name != null && removeWhitespaces(name).length() > 0;
     }
-
     public static boolean isValidIban(String iban) {
       if (iban != null) {
         // Remove whitespaces and convert to uppercase first
@@ -225,7 +268,7 @@ public class DataManager {
       }
       return false;
     }
-
+    //////////////////////////////////////////////////////
     private static boolean isValidCountryCode(String iban) {
       String cc = getCountryCode(iban);
       Log.d("isValidCountryCode", Integer.toString(getCountryCodeIndex(cc)));
